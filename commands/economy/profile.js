@@ -17,7 +17,8 @@ module.exports = {
                     `**level**\n\`${userData.level}\`\n\n` +
                     `**progress**\n\`${userData.xp}/${userData.nextLevelXp} XP\`\n` +
                     `${progressBar}\n\n` +
-                    `**balance**\n\`${userData.balance} <:patrickcoin:1371211412940132492>\``
+                    `**balance**\n\`${userData.balance} <:patrickcoin:1371211412940132492>\`\n\n` +
+                    `**job**\n\`${userJob ? userJob.job_name : 'none'}\``
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
