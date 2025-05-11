@@ -30,6 +30,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${targetUser.username}'s Profile`)
+                .setThumbnail(targetUser.displayAvatarURL({ dynamic: true }))
                 .addFields(
                     { name: 'level', value: `${userData.level}`, inline: false },
                     { name: 'progress', value: `${userData.xp}/${xpForNextLevel} XP\n${progressBar}`, inline: false },
