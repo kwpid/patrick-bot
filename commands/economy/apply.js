@@ -13,7 +13,10 @@ module.exports = {
             }
 
             const jobId = args[0].toLowerCase();
+            console.log('Applying for job ID:', jobId);
+            
             const jobReq = await getJobRequirements(jobId);
+            console.log('Job requirements:', jobReq);
             
             if (!jobReq) {
                 return message.reply("*that job ID doesn't exist! use pa jobs to see available jobs.*");
@@ -25,11 +28,11 @@ module.exports = {
             }
 
             const currentJob = await getUserJob(message.author.id);
-            if (currentJob && currentJob.job_name === jobReq.job_name) {
+            if (currentJob && currentJob.job_id === jobId) {
                 return message.reply("*you already have this job!*");
             }
 
-            const success = await setUserJob(message.author.id, jobReq.job_name);
+            const success = await setUserJob(message.author.id, jobId);
             if (success) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')

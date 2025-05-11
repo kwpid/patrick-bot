@@ -544,10 +544,12 @@ async function updateLastWorked(userId) {
 
 async function getJobRequirements(jobId) {
     try {
+        console.log('Getting job requirements for job ID:', jobId);
         const result = await pool.query(
             'SELECT * FROM job_requirements WHERE job_id = $1',
             [jobId]
         );
+        console.log('Query result:', result.rows[0]);
         return result.rows[0];
     } catch (error) {
         console.error('Error getting job requirements:', error);
