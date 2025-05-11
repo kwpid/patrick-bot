@@ -68,12 +68,19 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create shop table
+        // Create shop table with all necessary columns
         await pool.query(`
             CREATE TABLE IF NOT EXISTS shop (
                 item_id TEXT PRIMARY KEY,
-                price INTEGER,
-                discount INTEGER DEFAULT 0,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price INTEGER NOT NULL,
+                emoji_id TEXT NOT NULL,
+                tags TEXT[] NOT NULL,
+                value INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                on_sale BOOLEAN DEFAULT true,
+                discount DECIMAL(3,2) DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -83,6 +90,7 @@ async function initializeDatabase() {
             CREATE INDEX IF NOT EXISTS economy_user_id_idx ON economy(user_id);
             CREATE INDEX IF NOT EXISTS inventory_user_id_idx ON inventory(user_id);
             CREATE INDEX IF NOT EXISTS inventory_item_id_idx ON inventory(item_id);
+            CREATE INDEX IF NOT EXISTS shop_item_id_idx ON shop(item_id);
         `);
 
         console.log('Database tables initialized successfully');
@@ -344,8 +352,10 @@ async function updateShopItems() {
         // Insert new items
         for (const item of itemsWithDiscounts) {
             await pool.query(
-                `INSERT INTO shop (item_id, name, description, price, emoji_id, tags, value, type, on_sale, discount)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                `INSERT INTO shop (
+                    item_id, name, description, price, emoji_id, 
+                    tags, value, type, on_sale, discount
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
                 [
                     item.id,
                     item.name,
