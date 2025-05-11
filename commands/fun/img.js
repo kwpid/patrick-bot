@@ -9,6 +9,11 @@ const patrickImages = [
 "https://media.discordapp.net/attachments/799428131714367498/1371205284898275409/Z.png?ex=682249ef&is=6820f86f&hm=94144c803c1275eb662aa35ccfa886d74386fa9561af0fbf288ddfa8dba354da&=&format=webp&quality=lossless&width=162&height=253",
 "https://media.discordapp.net/attachments/799428131714367498/1371205306599608391/2Q.png?ex=682249f4&is=6820f874&hm=fc3c8706f4b694d6acfaf7701d133162b3836e1f27903a9d96e7a326f9b6ff9a&=&format=webp&quality=lossless&width=202&height=202",
 "https://media.discordapp.net/attachments/799428131714367498/1371205511357403166/9k.png?ex=68224a25&is=6820f8a5&hm=593faed672244f6ce5376ff8432e906964205903517a5eb29d3d8dc442aa9f8c&=&format=webp&quality=lossless&width=165&height=248",
+"https://media.discordapp.net/attachments/799428131714367498/1371226789216649276/2Q.png?ex=68225df6&is=68210c76&hm=62a7f669da9d69d5d290970a7cb9eaed12503d2b11422739483dd8cd6b7c96de&=&format=webp&quality=lossless",
+"https://media.discordapp.net/attachments/799428131714367498/1371226857147727992/Z.png?ex=68225e06&is=68210c86&hm=dc5eac22033756462dcdd7f0b3e07ab5153f78db2c330772bd477e7440bc5107&=&format=webp&quality=lossless",
+"https://media.discordapp.net/attachments/799428131714367498/1371226923975446652/images.png?ex=68225e16&is=68210c96&hm=09c259dc9584b2093f6821ec8ea7d5577eac99b80b1d0c488da0b0b0e902c1bf&=&format=webp&quality=lossless",
+"https://media.discordapp.net/attachments/799428131714367498/1371226976022429806/images.png?ex=68225e23&is=68210ca3&hm=e59b26907982594dec163166378a375a74e0b0a7ef386651548e6ca3543699fb&=&format=webp&quality=lossless",
+"https://media.discordapp.net/attachments/799428131714367498/1371227044880318464/GpjXG9.png?ex=68225e33&is=68210cb3&hm=89c21099bb67ee1a89dfa64d63265ff3d20fd2da0928a0e0e36a1f80ea3060fe&=&format=webp&quality=lossless",
 ];
 
 module.exports = {
