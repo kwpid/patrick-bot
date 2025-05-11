@@ -309,9 +309,10 @@ async function addXp(userId, amount, message) {
 
         // Check for level up
         while (userData.xp >= userData.nextLevelXp) {
+            const overflowXp = userData.xp - userData.nextLevelXp;
             userData.level += 1;
-            userData.xp -= userData.nextLevelXp;
             userData.nextLevelXp = calculateNextLevelXp(userData.level);
+            userData.xp = overflowXp;
             
             // Add coins for level up - reward is 100 * level
             const levelReward = userData.level * 100;
