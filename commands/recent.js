@@ -14,24 +14,20 @@ module.exports = {
         if (channelMessages.length === 0) {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle("no delete messages found")
-                .setDescription("*i haven't seen any messages get deleted in this channel*")
+                .setTitle("no deleted messages")
+                .setDescription("*i haven't seen any deleted messages recently*")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             
             return message.reply({ embeds: [embed] });
         }
 
-        // Format the messages
-        const messageList = channelMessages.map(msg => {
-            const time = new Date(msg.timestamp).toLocaleTimeString();
-            return `**${msg.author}** (${time}):\n${msg.content}\n`;
-        }).join('\n');
-
         const embed = new EmbedBuilder()
             .setColor('#292929')
             .setTitle("recently deleted messages")
-            .setDescription(messageList)
+            .setDescription(channelMessages.map(msg => 
+                `> ${msg.content}\n*~ ${msg.author}*`
+            ).join('\n\n'))
             .setFooter({ text: 'patrick' })
             .setTimestamp();
 

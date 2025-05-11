@@ -1,6 +1,10 @@
 const { EmbedBuilder } = require('discord.js');
 
-// Add your image URLs here
+// To add images:
+// 1. Upload the image to Discord
+// 2. Right-click the image
+// 3. Click "Copy Media Link" or "Copy Image Address"
+// 4. The URL should look like: https://cdn.discordapp.com/attachments/...
 const patrickImages = [
 "https://media.discordapp.net/attachments/799428131714367498/1371205284898275409/Z.png?ex=682249ef&is=6820f86f&hm=94144c803c1275eb662aa35ccfa886d74386fa9561af0fbf288ddfa8dba354da&=&format=webp&quality=lossless&width=162&height=253",
 "https://media.discordapp.net/attachments/799428131714367498/1371205306599608391/2Q.png?ex=682249f4&is=6820f874&hm=fc3c8706f4b694d6acfaf7701d133162b3836e1f27903a9d96e7a326f9b6ff9a&=&format=webp&quality=lossless&width=202&height=202",
