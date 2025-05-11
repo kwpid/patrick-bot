@@ -134,7 +134,7 @@ async function initializeDatabase() {
                 quantity INTEGER DEFAULT 1,
                 PRIMARY KEY (user_id, item_id),
                 FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
-                FOREIGN KEY (item_id) REFERENCES shop(item_id) ON DELETE CASCADE
+                FOREIGN KEY (item_id) REFERENCES shop(item_id)
             )
         `);
 
@@ -487,14 +487,14 @@ async function updateShopItems() {
         // Read shop items from JSON file
         const shopItems = require('./shopItems.json').items;
         
-        // Clear current shop
-        await pool.query('DELETE FROM shop');
-        
         // Select 3-5 random items for the shop
         const numItems = Math.floor(Math.random() * 3) + 3; // Random number between 3-5
         const selectedItems = shopItems
             .sort(() => Math.random() - 0.5)
             .slice(0, numItems);
+        
+        // Clear current shop and insert new items
+        await pool.query('TRUNCATE TABLE shop');
         
         // Insert new items
         for (const item of selectedItems) {
@@ -689,6 +689,107 @@ function formatNumber(num) {
     return formatted.replace(/\.0$/, '') + units[magnitude];
 }
 
+// Safely recreate all tables
+async function recreateAllTables() {
+    try {
+        // Drop tables in correct order to handle dependencies
+        await pool.query('DROP TABLE IF EXISTS inventory CASCADE');
+        await pool.query('DROP TABLE IF EXISTS jobs CASCADE');
+        await pool.query('DROP TABLE IF EXISTS job_requirements CASCADE');
+        await pool.query('DROP TABLE IF EXISTS shop CASCADE');
+        await pool.query('DROP TABLE IF EXISTS economy CASCADE');
+
+        // Recreate tables in correct order
+        await pool.query(`
+            CREATE TABLE economy (
+                user_id TEXT PRIMARY KEY,
+                balance INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1,
+                xp INTEGER DEFAULT 0,
+                next_level_xp INTEGER DEFAULT 100,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE shop (
+                item_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price INTEGER NOT NULL,
+                emoji_id TEXT NOT NULL,
+                tags TEXT[] NOT NULL,
+                value INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                on_sale BOOLEAN DEFAULT true,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE inventory (
+                user_id TEXT,
+                item_id TEXT,
+                quantity INTEGER DEFAULT 1,
+                PRIMARY KEY (user_id, item_id),
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (item_id) REFERENCES shop(item_id)
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE job_requirements (
+                job_id TEXT PRIMARY KEY,
+                job_name TEXT NOT NULL,
+                required_level INTEGER NOT NULL,
+                salary INTEGER NOT NULL
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE jobs (
+                user_id TEXT PRIMARY KEY,
+                job_id TEXT NOT NULL,
+                job_name TEXT NOT NULL,
+                last_worked TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
+            )
+        `);
+
+        // Initialize shop items
+        await initializeShopItems();
+
+        // Initialize job requirements
+        const jobs = [
+            ['lemonade_booth', 'Lemonade Booth', 0, 200],
+            ['chum_janitor', 'Chum Bucket Janitor', 3, 350],
+            ['shake_server', 'Kelp Shake Server', 5, 500],
+            ['boating_assistant', 'Boating School Assistant', 8, 650],
+            ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800],
+            ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
+            ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200],
+            ['tour_guide', 'Atlantis Tour Guide', 21, 1500],
+            ['krab_manager', 'Krusty Krab Manager', 25, 1800],
+            ['krab_owner', 'Krusty Krab Owner', 30, 2500]
+        ];
+
+        for (const [id, name, level, salary] of jobs) {
+            await pool.query(
+                'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
+                [id, name, level, salary]
+            );
+        }
+
+        console.log('All tables recreated successfully');
+        return true;
+    } catch (error) {
+        console.error('Error recreating tables:', error);
+        return false;
+    }
+}
+
 module.exports = {
     getUserData,
     updateUserData,
@@ -709,5 +810,6 @@ module.exports = {
     getAllJobs,
     recreateJobRequirementsTable,
     recreateJobsTable,
-    formatNumber
+    formatNumber,
+    recreateAllTables
 }; 

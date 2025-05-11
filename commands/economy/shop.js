@@ -103,75 +103,106 @@ module.exports = {
                     rows.push(itemRow);
                 }
 
-                await interaction.reply({
-                    content: "*which item would you like to buy?*",
-                    components: rows,
-                    ephemeral: true
-                });
+                try {
+                    await interaction.reply({
+                        content: "*which item would you like to buy?*",
+                        components: rows,
+                        ephemeral: true
+                    });
 
-                const itemCollector = interaction.channel.createMessageComponentCollector({
-                    time: 30000
-                });
+                    const itemCollector = interaction.channel.createMessageComponentCollector({
+                        time: 30000
+                    });
 
-                itemCollector.on('collect', async (itemInteraction) => {
-                    if (itemInteraction.user.id !== message.author.id) {
-                        return itemInteraction.reply({
-                            content: "*this isn't your shop!*",
-                            ephemeral: true
-                        });
-                    }
-
-                    const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
-                    const item = shopItems[itemIndex];
-
-                    if (userData.balance < item.price) {
-                        return itemInteraction.reply({
-                            content: "*you don't have enough coins!*",
-                            ephemeral: true
-                        });
-                    }
-
-                    try {
-                        // Update user balance
-                        userData.balance -= item.price;
-                        await updateUserData(message.author.id, userData);
-
-                        // Add item to inventory
-                        const success = await addItemToInventory(message.author.id, item.item_id);
-                        
-                        if (success) {
-                            await itemInteraction.reply({
-                                content: `*you bought ${item.name} for ${formatNumber(item.price)} ${PATRICK_COIN}!*`,
+                    itemCollector.on('collect', async (itemInteraction) => {
+                        if (itemInteraction.user.id !== message.author.id) {
+                            return itemInteraction.reply({
+                                content: "*this isn't your shop!*",
                                 ephemeral: true
                             });
-                        } else {
-                            // Refund if adding to inventory fails
-                            userData.balance += item.price;
-                            await updateUserData(message.author.id, userData);
-                            throw new Error('Failed to add item to inventory');
                         }
-                    } catch (error) {
-                        console.error('Error adding item to inventory:', error);
-                        await itemInteraction.reply({
-                            content: "*something went wrong while buying the item!*",
+
+                        const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
+                        const item = shopItems[itemIndex];
+
+                        if (!item) {
+                            return itemInteraction.reply({
+                                content: "*this item is no longer available!*",
+                                ephemeral: true
+                            });
+                        }
+
+                        if (userData.balance < item.price) {
+                            return itemInteraction.reply({
+                                content: "*you don't have enough coins!*",
+                                ephemeral: true
+                            });
+                        }
+
+                        try {
+                            // Update user balance
+                            userData.balance -= item.price;
+                            await updateUserData(message.author.id, userData);
+
+                            // Add item to inventory
+                            const success = await addItemToInventory(message.author.id, item.item_id);
+                            
+                            if (success) {
+                                await itemInteraction.reply({
+                                    content: `*you bought ${item.name} for ${formatNumber(item.price)} ${PATRICK_COIN}!*`,
+                                    ephemeral: true
+                                });
+                            } else {
+                                // Refund if adding to inventory fails
+                                userData.balance += item.price;
+                                await updateUserData(message.author.id, userData);
+                                throw new Error('Failed to add item to inventory');
+                            }
+                        } catch (error) {
+                            console.error('Error adding item to inventory:', error);
+                            try {
+                                await itemInteraction.reply({
+                                    content: "*something went wrong while buying the item!*",
+                                    ephemeral: true
+                                });
+                            } catch (replyError) {
+                                console.error('Error sending error message:', replyError);
+                            }
+                        }
+
+                        itemCollector.stop();
+                    });
+
+                    itemCollector.on('end', () => {
+                        try {
+                            interaction.editReply({
+                                content: "*shop closed!*",
+                                components: []
+                            }).catch(() => {});
+                        } catch (error) {
+                            console.error('Error closing shop:', error);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error handling buy interaction:', error);
+                    try {
+                        await interaction.reply({
+                            content: "*something went wrong, try again later!*",
                             ephemeral: true
                         });
+                    } catch (replyError) {
+                        console.error('Error sending error message:', replyError);
                     }
-
-                    itemCollector.stop();
-                });
-
-                itemCollector.on('end', () => {
-                    interaction.editReply({
-                        content: "*shop closed!*",
-                        components: []
-                    }).catch(() => {});
-                });
+                }
             });
 
             collector.on('end', () => {
-                row.components.forEach(button => button.setDisabled(true));
-                response.edit({ components: [row] }).catch(() => {});
+                try {
+                    row.components.forEach(button => button.setDisabled(true));
+                    response.edit({ components: [row] }).catch(() => {});
+                } catch (error) {
+                    console.error('Error disabling shop buttons:', error);
+                }
             });
         } catch (error) {
             console.error('Error in shop command:', error);

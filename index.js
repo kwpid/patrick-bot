@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Partials, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const { trackMessage, trackCommand } = require('./commands/economy/economyUtils');
@@ -93,6 +93,54 @@ client.on('disconnect', () => {
     console.log('Disconnected from Discord!');
 });
 
+const activities = [
+    // Krusty Krab
+    { name: 'flipping Krabby Patties at the Krusty Krab', type: ActivityType.Playing },
+    { name: 'eating a Krabby Patty at the Krusty Krab', type: ActivityType.Playing },
+    { name: 'annoying Squidward at the Krusty Krab', type: ActivityType.Playing },
+  
+    // Jellyfish Fields
+    { name: 'jellyfishing in Jellyfish Fields', type: ActivityType.Playing },
+    { name: 'getting stung in Jellyfish Fields', type: ActivityType.Playing },
+    { name: 'dancing with jellyfish in Jellyfish Fields', type: ActivityType.Playing },
+  
+    // At Home
+    { name: 'sleeping under his rock', type: ActivityType.Playing },
+    { name: 'talking to the TV under his rock', type: ActivityType.Playing },
+    { name: 'playing with a bubble wand under his rock', type: ActivityType.Playing },
+  
+    // With Friends
+    { name: 'blowing bubbles with SpongeBob', type: ActivityType.Playing },
+    { name: 'playing with Gary the snail', type: ActivityType.Playing },
+    { name: 'playing dumb with SpongeBob', type: ActivityType.Playing },
+  
+    // Goo Lagoon
+    { name: 'soaking up sun at Goo Lagoon', type: ActivityType.Playing },
+    { name: 'building sandcastles at Goo Lagoon', type: ActivityType.Playing },
+  
+    // Music-related (can be anywhere)
+    { name: 'rocking out on a guitar', type: ActivityType.Playing },
+    { name: 'banging on a drum set', type: ActivityType.Playing },
+    { name: 'squawking on a clarinet like Squidward', type: ActivityType.Playing },
+    { name: 'trying to play the ukulele', type: ActivityType.Playing },
+  
+    // Misc Bikini Bottom
+    { name: 'wandering around Bikini Bottom', type: ActivityType.Playing },
+    { name: 'getting lost near the Chum Bucket', type: ActivityType.Playing },
+    { name: 'pretending to be smart at the library', type: ActivityType.Playing },
+    { name: 'doing nothing at all (and loving it)', type: ActivityType.Playing }
+  ];
+  
+
+// Function to update presence
+function updatePresence() {
+    const activity = activities[Math.floor(Math.random() * activities.length)];
+    client.user.setPresence({
+        activities: [activity],
+        status: 'online'
+    });
+}
+
 client.once('ready', () => {
     console.log('=================================');
     console.log(`Logged in as ${client.user.tag}!`);
@@ -100,11 +148,11 @@ client.once('ready', () => {
     console.log(`Guild ID: ${GUILD_ID}`);
     console.log('=================================');
     
-    // Set bot to guild-specific
-    client.user.setPresence({
-        activities: [{ name: 'Guild Specific Bot' }],
-        status: 'online'
-    });
+    // Set initial presence
+    updatePresence();
+    
+    // Update presence every 15 seconds
+    setInterval(updatePresence, 15000);
 
     // Verify guild access
     const guild = client.guilds.cache.get(GUILD_ID);
