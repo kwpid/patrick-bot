@@ -39,7 +39,7 @@ module.exports = {
                             Math.floor(item.price * (1 - item.discount)) : 
                             item.price;
                         
-                        let itemDisplay = `${item.emoji_id} **${item.name}**\n`;
+                        let itemDisplay = `<:${item.name.toLowerCase()}:${item.emoji_id}> **${item.name}**\n`;
                         itemDisplay += `├ Price: ${hasDiscount ? `~~${item.price}~~ **${finalPrice}**` : finalPrice} ${PATRICK_COIN}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
