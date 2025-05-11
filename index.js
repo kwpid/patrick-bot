@@ -54,14 +54,27 @@ const deletedMessages = new Map();
 // Load commands
 console.log('Loading commands...');
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    client.commands.set(command.name, command);
-    console.log(`Loaded command: ${command.name}`);
+// Function to recursively load commands from directories
+function loadCommands(dir) {
+    const files = fs.readdirSync(dir);
+    
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+        
+        if (stat.isDirectory()) {
+            // Recursively load commands from subdirectories
+            loadCommands(filePath);
+        } else if (file.endsWith('.js')) {
+            const command = require(filePath);
+            client.commands.set(command.name, command);
+            console.log(`Loaded command: ${command.name} (${path.relative(commandsPath, filePath)})`);
+        }
+    }
 }
+
+loadCommands(commandsPath);
 
 // Connection events
 client.on('connecting', () => {
