@@ -109,6 +109,16 @@
             "value": 175,
             "type": "item",
             "on_sale": true
+        },
+        {
+            "id": "chest_1",
+            "name": "Basic Chest",
+            "description": "A basic chest that might contain some goodies!",
+            "price": 1000,
+            "emoji_id": "1371269782808039524",
+            "tags": ["chest", "basic"],
+            "value": 500,
+            "type": "chest"
         }
     ]
 } 
