@@ -265,7 +265,8 @@ async function getUserData(userId) {
         };
     } catch (error) {
         console.error('Error getting user data:', error);
-        return defaultUserData;
+        // Instead of returning default data, throw the error
+        throw error;
     }
 }
 
