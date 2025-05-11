@@ -12,7 +12,7 @@ function shouldResetShop() {
 
 module.exports = {
     name: 'shop',
-    description: 'view the shop',
+    description: 'shows the shop with daily items',
     aliases: ['s'],
     async execute(message, client) {
         try {
@@ -26,31 +26,33 @@ module.exports = {
                 return message.reply("*shop has been refreshed!*");
             }
 
-            const items = await getShopItems();
+            let shopItems = await getShopItems();
             
-            if (!items || items.length === 0) {
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle('patrick\'s shop')
-                    .setDescription('*the shop is empty right now!*')
-                    .setFooter({ text: 'patrick' })
-                    .setTimestamp();
-                
-                return message.reply({ embeds: [embed] });
+            // If no items in shop or it's time to reset, update the shop
+            if (!shopItems || shopItems.length === 0 || shouldResetShop()) {
+                await updateShopItems();
+                shopItems = await getShopItems();
+            }
+
+            // If still no items, show error message
+            if (!shopItems || shopItems.length === 0) {
+                return message.reply("*the shop is empty right now, check back later!*");
             }
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('patrick\'s shop')
+                .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
                 .setDescription(
-                    items.map(item => 
-                        `*${item.name}*\n` +
-                        `*id: \`${item.item_id}\`*\n` +
-                        `*price: \`${formatNumber(item.price)} ${PATRICK_COIN}\`*\n` +
-                        `*${item.description}*\n`
-                    ).join('\n')
+                    shopItems.map(item => {
+                        let itemDisplay = `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}> **${item.name}**\n`;
+                        itemDisplay += `├ Price: ${formatNumber(item.price)} ${PATRICK_COIN}\n`;
+                        itemDisplay += `├ Description: ${item.description}\n`;
+                        itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
+                        return itemDisplay;
+                    }).join('\n\n')
                 )
-                .setFooter({ text: 'patrick' })
+                .setFooter({ text: 'patrick • resets at 12 PM EST' })
                 .setTimestamp();
 
             const row = new ActionRowBuilder()
@@ -88,10 +90,10 @@ module.exports = {
 
                 // Create rows with buttons for each item (max 5 buttons per row)
                 const rows = [];
-                for (let i = 0; i < items.length; i += 5) {
+                for (let i = 0; i < shopItems.length; i += 5) {
                     const itemRow = new ActionRowBuilder()
                         .addComponents(
-                            ...items.slice(i, i + 5).map((item, index) => 
+                            ...shopItems.slice(i, i + 5).map((item, index) => 
                                 new ButtonBuilder()
                                     .setCustomId(`buy_${i + index}`)
                                     .setLabel(`Buy ${item.name}`)
@@ -120,7 +122,7 @@ module.exports = {
                     }
 
                     const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
-                    const item = items[itemIndex];
+                    const item = shopItems[itemIndex];
 
                     if (userData.balance < item.price) {
                         return itemInteraction.reply({
