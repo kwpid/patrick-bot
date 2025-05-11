@@ -382,9 +382,9 @@ function generateProgressBar(current, total, length = 10) {
     
     for (let i = 0; i < length; i++) {
         if (i === 0) {
-            bar += i < progress ? '<:left_start_filled:1366792481500299416>' : '<:left_start_empty:1366791939168403556>';
+            bar += i < progress ? '<:left_filled:1366792481500299416>' : '<:left_empty:1366791939168403556>';
         } else if (i === length - 1) {
-            bar += i < progress ? '<:right_end_filled:1366792357722198068>' : '<:right_end_empty:1366791994847789148>';
+            bar += i < progress ? '<:right_filled:1366792357722198068>' : '<:right_empty:1366791994847789148>';
         } else {
             bar += i < progress ? '<:middle_filled:1366792454749294824>' : '<:middle_empty:1366791972651667579>';
         }

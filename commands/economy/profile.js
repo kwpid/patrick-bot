@@ -12,13 +12,12 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s profile`)
+                .setTitle(`${message.author.username}'s Profile`)
                 .setDescription(
-                    `**level** \`${userData.level}\`\n` +
-                    `**xp** \`${formatNumber(userData.xp)}/${formatNumber(userData.nextLevelXp)}\`\n` +
+                    `**level**\n\`${userData.level}\`\n\n` +
+                    `**progress**\n\`${userData.xp}/${userData.nextLevelXp} XP\`\n` +
                     `${progressBar}\n\n` +
-                    `**balance** \`${formatNumber(userData.balance)} <:patrickcoin:1371211412940132492>\`\n` +
-                    `**job** \`${userJob ? userJob.job_name : 'none'}\``
+                    `**balance**\n\`${userData.balance} <:patrickcoin:1371211412940132492>\``
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
