@@ -33,7 +33,8 @@ module.exports = {
                         pageJobs.map(job => {
                             let jobDisplay = `**${job.job_name}**\n`;
                             jobDisplay += `├ Salary: ${job.salary} ${PATRICK_COIN} per shift\n`;
-                            jobDisplay += `└ Required Level: ${job.required_level}`;
+                            jobDisplay += `├ Required Level: ${job.required_level}\n`;
+                            jobDisplay += `└ ID: \`${job.job_id}\``;
                             
                             // Add indicators for current job and level requirement
                             if (userJob && userJob.job_name === job.job_name) {
@@ -57,13 +58,13 @@ module.exports = {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId('prev')
-                        .setLabel('Previous')
-                        .setStyle(ButtonStyle.Primary)
+                        .setLabel('◀')
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(currentPage === 0),
                     new ButtonBuilder()
                         .setCustomId('next')
-                        .setLabel('Next')
-                        .setStyle(ButtonStyle.Primary)
+                        .setLabel('▶')
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(currentPage === totalPages - 1)
                 );
 

@@ -9,14 +9,14 @@ module.exports = {
         try {
             const args = message.content.split(' ').slice(1);
             if (args.length === 0) {
-                return message.reply("*please specify a job to apply for!*");
+                return message.reply("*please specify a job ID to apply for! use pa jobs to see available jobs.*");
             }
 
-            const jobName = args.join(' ');
-            const jobReq = await getJobRequirements(jobName);
+            const jobId = args[0].toLowerCase();
+            const jobReq = await getJobRequirements(jobId);
             
             if (!jobReq) {
-                return message.reply("*that job doesn't exist!*");
+                return message.reply("*that job ID doesn't exist! use pa jobs to see available jobs.*");
             }
 
             const userData = await getUserData(message.author.id);
@@ -25,16 +25,16 @@ module.exports = {
             }
 
             const currentJob = await getUserJob(message.author.id);
-            if (currentJob && currentJob.job_name === jobName) {
+            if (currentJob && currentJob.job_name === jobReq.job_name) {
                 return message.reply("*you already have this job!*");
             }
 
-            const success = await setUserJob(message.author.id, jobName);
+            const success = await setUserJob(message.author.id, jobReq.job_name);
             if (success) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle('patrick\'s jobs')
-                    .setDescription(`*you are now working as a ${jobName}!*\n*you will earn ${jobReq.salary} <:patrickcoin:1371211412940132492> per shift*`)
+                    .setDescription(`*you are now working as a ${jobReq.job_name}!*\n*you will earn ${jobReq.salary} <:patrickcoin:1371211412940132492> per shift*`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 

@@ -167,7 +167,8 @@ async function initializeDatabase() {
         // Create job requirements table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS job_requirements (
-                job_name TEXT PRIMARY KEY,
+                job_id TEXT PRIMARY KEY,
+                job_name TEXT NOT NULL,
                 required_level INTEGER NOT NULL,
                 salary INTEGER NOT NULL
             )
@@ -183,22 +184,22 @@ async function initializeDatabase() {
         const jobCheck = await pool.query('SELECT COUNT(*) FROM job_requirements');
         if (jobCheck.rows[0].count === '0') {
             const jobs = [
-                ['Lemonade Booth', 0, 200],
-                ['Chum Bucket Janitor', 3, 350],
-                ['Kelp Shake Server', 5, 500],
-                ['Boating School Assistant', 8, 650],
-                ['Jellyfish Jelly Harvester', 11, 800],
-                ['Lifeguard at Goo Lagoon', 14, 1000],
-                ['Sandy\'s Lab Assistant', 17, 1200],
-                ['Atlantis Tour Guide', 21, 1500],
-                ['Krusty Krab Manager', 25, 1800],
-                ['Krusty Krab Owner', 30, 2500]
+                ['lemonade', 'Lemonade Booth', 0, 200],
+                ['janitor', 'Chum Bucket Janitor', 3, 350],
+                ['shake', 'Kelp Shake Server', 5, 500],
+                ['boating', 'Boating School Assistant', 8, 650],
+                ['jelly', 'Jellyfish Jelly Harvester', 11, 800],
+                ['lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
+                ['lab', 'Sandy\'s Lab Assistant', 17, 1200],
+                ['tour', 'Atlantis Tour Guide', 21, 1500],
+                ['manager', 'Krusty Krab Manager', 25, 1800],
+                ['owner', 'Krusty Krab Owner', 30, 2500]
             ];
 
-            for (const [job, level, salary] of jobs) {
+            for (const [id, name, level, salary] of jobs) {
                 await pool.query(
-                    'INSERT INTO job_requirements (job_name, required_level, salary) VALUES ($1, $2, $3)',
-                    [job, level, salary]
+                    'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
+                    [id, name, level, salary]
                 );
             }
         }
@@ -535,11 +536,11 @@ async function updateLastWorked(userId) {
     }
 }
 
-async function getJobRequirements(jobName) {
+async function getJobRequirements(jobId) {
     try {
         const result = await pool.query(
-            'SELECT * FROM job_requirements WHERE job_name = $1',
-            [jobName]
+            'SELECT * FROM job_requirements WHERE job_id = $1',
+            [jobId]
         );
         return result.rows[0];
     } catch (error) {
