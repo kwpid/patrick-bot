@@ -138,9 +138,9 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create shop table if it doesn't exist
+        // Create shop table
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS shop (
+            CREATE TABLE shop (
                 item_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 description TEXT NOT NULL,
@@ -150,6 +150,7 @@ async function initializeDatabase() {
                 value INTEGER NOT NULL,
                 type TEXT NOT NULL,
                 on_sale BOOLEAN DEFAULT true,
+                discount DECIMAL(3,2) DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -493,16 +494,20 @@ async function updateShopItems() {
             .sort(() => Math.random() - 0.5)
             .slice(0, numItems);
         
-        // Clear current shop and insert new items
-        await pool.query('TRUNCATE TABLE shop');
+        // Update all items to not be on sale first
+        await pool.query('UPDATE shop SET on_sale = false');
         
-        // Insert new items
+        // Insert or update selected items
         for (const item of selectedItems) {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
                     tags, value, type, on_sale
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (item_id) 
+                DO UPDATE SET 
+                    on_sale = $9,
+                    last_updated = CURRENT_TIMESTAMP`,
                 [
                     item.id,
                     item.name,
@@ -723,6 +728,7 @@ async function recreateAllTables() {
                 value INTEGER NOT NULL,
                 type TEXT NOT NULL,
                 on_sale BOOLEAN DEFAULT true,
+                discount DECIMAL(3,2) DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
