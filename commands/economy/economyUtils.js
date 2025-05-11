@@ -327,6 +327,18 @@ async function getUserInventory(userId) {
 
 async function addItemToInventory(userId, itemId, quantity = 1) {
     try {
+        // First check if the item exists in the shop
+        const itemCheck = await pool.query(
+            'SELECT item_id FROM shop WHERE item_id = $1',
+            [itemId]
+        );
+
+        if (itemCheck.rows.length === 0) {
+            console.error('Item not found in shop:', itemId);
+            return false;
+        }
+
+        // Then add to inventory
         await pool.query(
             `INSERT INTO inventory (user_id, item_id, quantity)
              VALUES ($1, $2, $3)

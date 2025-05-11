@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getShopItems, updateShopItems, addItemToInventory, getUserData } = require('./economyUtils');
+const { getShopItems, updateShopItems, addItemToInventory, getUserData, updateUserData } = require('./economyUtils');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
 
@@ -44,7 +44,7 @@ module.exports = {
                 .setTitle('patrick\'s shop')
                 .setDescription(
                     shopItems.map(item => {
-                        let itemDisplay = `<:${item.name.toLowerCase()}:${item.emoji_id}> **${item.name}**\n`;
+                        let itemDisplay = `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}> **${item.name}**\n`;
                         itemDisplay += `├ Price: ${item.price} ${PATRICK_COIN}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
@@ -131,11 +131,24 @@ module.exports = {
                     }
 
                     try {
-                        await addItemToInventory(message.author.id, item.id);
-                        await itemInteraction.reply({
-                            content: `*you bought ${item.name} for ${item.price} ${PATRICK_COIN}!*`,
-                            ephemeral: true
-                        });
+                        // Update user balance
+                        userData.balance -= item.price;
+                        await updateUserData(message.author.id, userData);
+
+                        // Add item to inventory
+                        const success = await addItemToInventory(message.author.id, item.item_id);
+                        
+                        if (success) {
+                            await itemInteraction.reply({
+                                content: `*you bought ${item.name} for ${item.price} ${PATRICK_COIN}!*`,
+                                ephemeral: true
+                            });
+                        } else {
+                            // Refund if adding to inventory fails
+                            userData.balance += item.price;
+                            await updateUserData(message.author.id, userData);
+                            throw new Error('Failed to add item to inventory');
+                        }
                     } catch (error) {
                         console.error('Error adding item to inventory:', error);
                         await itemInteraction.reply({
