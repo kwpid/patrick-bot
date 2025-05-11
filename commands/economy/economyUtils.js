@@ -184,16 +184,16 @@ async function initializeDatabase() {
         const jobCheck = await pool.query('SELECT COUNT(*) FROM job_requirements');
         if (jobCheck.rows[0].count === '0') {
             const jobs = [
-                ['lemonade', 'Lemonade Booth', 0, 200],
-                ['janitor', 'Chum Bucket Janitor', 3, 350],
-                ['shake', 'Kelp Shake Server', 5, 500],
-                ['boating', 'Boating School Assistant', 8, 650],
-                ['jelly', 'Jellyfish Jelly Harvester', 11, 800],
-                ['lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
-                ['lab', 'Sandy\'s Lab Assistant', 17, 1200],
-                ['tour', 'Atlantis Tour Guide', 21, 1500],
-                ['manager', 'Krusty Krab Manager', 25, 1800],
-                ['owner', 'Krusty Krab Owner', 30, 2500]
+                ['lemonade_booth', 'Lemonade Booth', 0, 200],
+                ['chum_janitor', 'Chum Bucket Janitor', 3, 350],
+                ['shake_server', 'Kelp Shake Server', 5, 500],
+                ['boating_assistant', 'Boating School Assistant', 8, 650],
+                ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800],
+                ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
+                ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200],
+                ['tour_guide', 'Atlantis Tour Guide', 21, 1500],
+                ['krab_manager', 'Krusty Krab Manager', 25, 1800],
+                ['krab_owner', 'Krusty Krab Owner', 30, 2500]
             ];
 
             for (const [id, name, level, salary] of jobs) {
@@ -559,6 +559,51 @@ async function getAllJobs() {
     }
 }
 
+// Safely recreate job requirements table
+async function recreateJobRequirementsTable() {
+    try {
+        // Drop existing job requirements table if it exists
+        await pool.query('DROP TABLE IF EXISTS job_requirements CASCADE');
+        
+        // Create job requirements table
+        await pool.query(`
+            CREATE TABLE job_requirements (
+                job_id TEXT PRIMARY KEY,
+                job_name TEXT NOT NULL,
+                required_level INTEGER NOT NULL,
+                salary INTEGER NOT NULL
+            )
+        `);
+
+        // Initialize job requirements
+        const jobs = [
+            ['lemonade_booth', 'Lemonade Booth', 0, 200],
+            ['chum_janitor', 'Chum Bucket Janitor', 3, 350],
+            ['shake_server', 'Kelp Shake Server', 5, 500],
+            ['boating_assistant', 'Boating School Assistant', 8, 650],
+            ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800],
+            ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
+            ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200],
+            ['tour_guide', 'Atlantis Tour Guide', 21, 1500],
+            ['krab_manager', 'Krusty Krab Manager', 25, 1800],
+            ['krab_owner', 'Krusty Krab Owner', 30, 2500]
+        ];
+
+        for (const [id, name, level, salary] of jobs) {
+            await pool.query(
+                'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
+                [id, name, level, salary]
+            );
+        }
+        
+        console.log('Job requirements table recreated successfully');
+        return true;
+    } catch (error) {
+        console.error('Error recreating job requirements table:', error);
+        return false;
+    }
+}
+
 module.exports = {
     getUserData,
     updateUserData,
@@ -576,5 +621,6 @@ module.exports = {
     setUserJob,
     updateLastWorked,
     getJobRequirements,
-    getAllJobs
+    getAllJobs,
+    recreateJobRequirementsTable
 }; 

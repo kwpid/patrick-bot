@@ -67,14 +67,17 @@ function loadCommands(dir) {
         if (stat.isDirectory()) {
             // Recursively load commands from subdirectories
             loadCommands(filePath);
-        } else if (file.endsWith('.js')) {
+        } else if (file.endsWith('.js') && file !== 'economyUtils.js') {  // Skip utility files
             const command = require(filePath);
-            client.commands.set(command.name, command);
-            console.log(`Loaded command: ${command.name} (${path.relative(commandsPath, filePath)})`);
+            if (command.name) {  // Only load if it has a name property
+                client.commands.set(command.name, command);
+                console.log(`Loaded command: ${command.name} (${path.relative(commandsPath, filePath)})`);
+            }
         }
     }
 }
 
+// Load all commands
 loadCommands(commandsPath);
 
 // Connection events
@@ -150,15 +153,19 @@ client.on('messageCreate', async message => {
 
     const command = client.commands.get(commandName);
 
-    if (!command) return;
+    if (!command) {
+        console.log(`Command not found: ${commandName}`);
+        return;
+    }
 
     try {
+        console.log(`Executing command: ${commandName}`);
         // Track command for XP
         await trackCommand(message);
-        command.execute(message, client);
+        await command.execute(message, client);
     } catch (error) {
-        console.error('Command execution error:', error);
-        message.reply('There was an error executing that command.');
+        console.error(`Error executing command ${commandName}:`, error);
+        message.reply('There was an error executing that command.').catch(console.error);
     }
 });
 
