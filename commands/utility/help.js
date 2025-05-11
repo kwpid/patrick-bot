@@ -2,6 +2,26 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const fs = require('fs');
 const path = require('path');
 
+// Define category display names and descriptions
+const categories = {
+    economy: {
+        name: 'economy',
+        description: 'commands for managing your patrickcoins and items'
+    },
+    utility: {
+        name: 'utility',
+        description: 'general utility commands'
+    },
+    fun: {
+        name: 'fun',
+        description: 'fun and entertainment commands'
+    },
+    admin: {
+        name: 'admin',
+        description: 'admin commands'
+    }
+};
+
 module.exports = {
     name: 'help',
     description: 'shows all available commands',
@@ -29,40 +49,35 @@ module.exports = {
                 }
             }
 
-            // Sort commands by category and name
-            commands.sort((a, b) => {
-                if (a.category === b.category) {
-                    return a.name.localeCompare(b.name);
-                }
-                return a.category.localeCompare(b.category);
-            });
+            // Group commands by category
+            const categorizedCommands = {};
+            for (const category in categories) {
+                categorizedCommands[category] = commands.filter(cmd => cmd.category === category);
+            }
 
-            // Split commands into pages (9 commands per page)
-            const commandsPerPage = 9;
+            // Create pages for each category
             const pages = [];
-            for (let i = 0; i < commands.length; i += commandsPerPage) {
-                pages.push(commands.slice(i, i + commandsPerPage));
+            for (const category in categories) {
+                if (categorizedCommands[category].length > 0) {
+                    const categoryInfo = categories[category];
+                    const embed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle(categoryInfo.name)
+                        .setDescription(categoryInfo.description + '\n\n' +
+                            categorizedCommands[category]
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map(cmd => `**${cmd.name}**\n└ ${cmd.description}`)
+                                .join('\n\n')
+                        )
+                        .setFooter({ 
+                            text: `patrick • ${categorizedCommands[category].length} commands`
+                        })
+                        .setTimestamp();
+                    pages.push(embed);
+                }
             }
 
             let currentPage = 0;
-
-            // Create embed for current page
-            const createEmbed = (page) => {
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle('patrick\'s commands')
-                    .setDescription(
-                        page.map(cmd => 
-                            `**${cmd.name}**\n└ ${cmd.description}`
-                        ).join('\n\n')
-                    )
-                    .setFooter({ 
-                        text: `patrick • page ${currentPage + 1}/${pages.length} • ${commands.length} total commands`
-                    })
-                    .setTimestamp();
-
-                return embed;
-            };
 
             // Create navigation buttons
             const createButtons = () => {
@@ -93,7 +108,7 @@ module.exports = {
 
             // Send initial message
             const response = await message.reply({
-                embeds: [createEmbed(pages[currentPage])],
+                embeds: [pages[currentPage]],
                 components: [createButtons()]
             });
 
@@ -126,7 +141,7 @@ module.exports = {
                 }
 
                 await interaction.update({
-                    embeds: [createEmbed(pages[currentPage])],
+                    embeds: [pages[currentPage]],
                     components: [createButtons()]
                 });
             });

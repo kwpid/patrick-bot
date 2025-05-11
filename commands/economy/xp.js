@@ -11,7 +11,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s xp')
+                .setTitle(`${message.author.username}'s XP`)
                 .setDescription(
                     `*level ${userData.level}*\n` +
                     `${progressBar}\n` +
