@@ -1,0 +1,114 @@
+{
+    "items": [
+        {
+            "id": "wahh",
+            "name": "wahh",
+            "description": "wahh",
+            "price": 100,
+            "emoji_id": "1285218055198216192",
+            "tags": ["Collectible"],
+            "value": 50,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "ring",
+            "name": "Ring",
+            "description": "A ring to be given to a love one, or yourself",
+            "price": 2500,
+            "emoji_id": "1368092603232555020",
+            "tags": ["Collectible"],
+            "value": 2000,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "horse",
+            "name": "Horse",
+            "description": "Peter the horse is here",
+            "price": 250,
+            "emoji_id": "1368094262302081095",
+            "tags": ["Collectible"],
+            "value": 200,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "galaxy_sword",
+            "name": "Galaxy Sword",
+            "description": "A sword that can cut through galaxies",
+            "price": 200000,
+            "emoji_id": "1368094289632170014",
+            "tags": ["Collectible"],
+            "value": 200000,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "coke",
+            "name": "Coke",
+            "description": "A can of coke, who would've guessed?",
+            "price": 25,
+            "emoji_id": "1368096621421789314",
+            "tags": ["Collectible"],
+            "value": 10,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "beer",
+            "name": "Mug of Beer",
+            "description": "Drink responsibly!!",
+            "price": 350,
+            "emoji_id": "1368096669216018432",
+            "tags": ["Collectible"],
+            "value": 300,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "computer",
+            "name": "Computer",
+            "description": "You can use this for, coding?",
+            "price": 5000,
+            "emoji_id": "1368096587233886289",
+            "tags": ["Collectible"],
+            "value": 4500,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "burger",
+            "name": "Burger",
+            "description": "Or a Krabby Patty if you let it be",
+            "price": 50,
+            "emoji_id": "1368098203953528986",
+            "tags": ["Collectible"],
+            "value": 40,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "chicken",
+            "name": "Chicken",
+            "description": "chicken butt",
+            "price": 150,
+            "emoji_id": "1368098180641587321",
+            "tags": ["Collectible"],
+            "value": 100,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "cat",
+            "name": "Cat",
+            "description": "kittyy",
+            "price": 200,
+            "emoji_id": "1368098132289654845",
+            "tags": ["Collectible"],
+            "value": 175,
+            "type": "item",
+            "on_sale": true
+        }
+    ]
+} 
