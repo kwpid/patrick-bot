@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const { trackMessage, trackCommand } = require('./commands/economy/economyUtils');
 
 // Environment variables
 const GUILD_ID = process.env.GUILD_ID;
@@ -139,6 +140,9 @@ client.on('messageCreate', async message => {
     // Ignore messages from other guilds
     if (message.guild.id !== GUILD_ID) return;
     
+    // Track message for XP
+    await trackMessage(message);
+    
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
@@ -149,6 +153,8 @@ client.on('messageCreate', async message => {
     if (!command) return;
 
     try {
+        // Track command for XP
+        await trackCommand(message);
         command.execute(message, client);
     } catch (error) {
         console.error('Command execution error:', error);
