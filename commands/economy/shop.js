@@ -3,16 +3,47 @@ const { getShopItems, updateShopItems, addItemToInventory, getUserData } = requi
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
 
+// Function to check if shop needs to be reset (12 PM EST)
+function shouldResetShop() {
+    const now = new Date();
+    const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    return est.getHours() === 12 && est.getMinutes() === 0;
+}
+
 module.exports = {
     name: 'shop',
     description: 'shows the shop with daily items',
     aliases: ['s'],
     async execute(message, client) {
         try {
+            // Check if user is admin and wants to refresh shop
+            if (message.content.toLowerCase().includes('refresh')) {
+                if (!message.member.permissions.has('Administrator')) {
+                    const embed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle('patrick\'s shop')
+                        .setDescription("*only administrators can refresh the shop!*")
+                        .setFooter({ text: 'patrick' })
+                        .setTimestamp();
+                    
+                    return message.reply({ embeds: [embed] });
+                }
+
+                await updateShopItems();
+                const embed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle('patrick\'s shop')
+                    .setDescription("*shop has been refreshed!*")
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
+                
+                return message.reply({ embeds: [embed] });
+            }
+
             let shopItems = await getShopItems();
             
-            // If no items in shop or it's a new day, update the shop
-            if (!shopItems || shopItems.length === 0) {
+            // If no items in shop or it's time to reset, update the shop
+            if (!shopItems || shopItems.length === 0 || shouldResetShop()) {
                 await updateShopItems();
                 shopItems = await getShopItems();
             }
@@ -51,7 +82,7 @@ module.exports = {
                         return itemDisplay;
                     }).join('\n\n')
                 )
-                .setFooter({ text: 'patrick' })
+                .setFooter({ text: 'patrick • resets at 12 PM EST' })
                 .setTimestamp();
 
             const row = new ActionRowBuilder()
