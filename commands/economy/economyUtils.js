@@ -272,11 +272,19 @@ async function getUserData(userId) {
 // Update user data
 async function updateUserData(userId, newData) {
     try {
+        // Validate data before updating
+        const validatedData = {
+            balance: Math.max(0, Math.floor(newData.balance)) || 0,
+            level: Math.max(1, Math.floor(newData.level)) || 1,
+            xp: Math.max(0, Math.floor(newData.xp)) || 0,
+            nextLevelXp: Math.max(100, Math.floor(newData.nextLevelXp)) || 100
+        };
+
         await pool.query(
             `UPDATE economy 
              SET balance = $1, level = $2, xp = $3, next_level_xp = $4, updated_at = CURRENT_TIMESTAMP
              WHERE user_id = $5`,
-            [newData.balance, newData.level, newData.xp, newData.nextLevelXp, userId]
+            [validatedData.balance, validatedData.level, validatedData.xp, validatedData.nextLevelXp, userId]
         );
         return true;
     } catch (error) {

@@ -29,8 +29,11 @@ module.exports = {
             await updateLastWorked(message.author.id);
             
             if (gameResult.success) {
+                // Validate salary is a positive number
+                const salary = Math.max(0, Math.floor(userJob.salary)) || 0;
+                
                 // Add salary to balance
-                userData.balance += userJob.salary;
+                userData.balance = (userData.balance || 0) + salary;
                 await updateUserData(message.author.id, userData);
 
                 const embed = new EmbedBuilder()
@@ -38,7 +41,7 @@ module.exports = {
                     .setTitle('patrick\'s work')
                     .setDescription(
                         `${gameResult.message}\n` +
-                        `*you earned ${formatNumber(userJob.salary)} <:patrickcoin:1371211412940132492>!*`
+                        `*you earned ${formatNumber(salary)} <:patrickcoin:1371211412940132492>!*`
                     )
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
