@@ -34,6 +34,40 @@ async function testConnection() {
     }
 }
 
+// Safely recreate shop table
+async function recreateShopTable() {
+    try {
+        // Drop existing shop table if it exists
+        await pool.query('DROP TABLE IF EXISTS shop CASCADE');
+        
+        // Create shop table with all necessary columns
+        await pool.query(`
+            CREATE TABLE shop (
+                item_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price INTEGER NOT NULL,
+                emoji_id TEXT NOT NULL,
+                tags TEXT[] NOT NULL,
+                value INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                on_sale BOOLEAN DEFAULT true,
+                discount DECIMAL(3,2) DEFAULT 0,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create index for faster queries
+        await pool.query('CREATE INDEX IF NOT EXISTS shop_item_id_idx ON shop(item_id)');
+        
+        console.log('Shop table recreated successfully');
+        return true;
+    } catch (error) {
+        console.error('Error recreating shop table:', error);
+        return false;
+    }
+}
+
 // Initialize database tables
 async function initializeDatabase() {
     try {
@@ -68,29 +102,14 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create shop table with all necessary columns
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS shop (
-                item_id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                price INTEGER NOT NULL,
-                emoji_id TEXT NOT NULL,
-                tags TEXT[] NOT NULL,
-                value INTEGER NOT NULL,
-                type TEXT NOT NULL,
-                on_sale BOOLEAN DEFAULT true,
-                discount DECIMAL(3,2) DEFAULT 0,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+        // Recreate shop table
+        await recreateShopTable();
 
-        // Create index for faster queries
+        // Create other indexes
         await pool.query(`
             CREATE INDEX IF NOT EXISTS economy_user_id_idx ON economy(user_id);
             CREATE INDEX IF NOT EXISTS inventory_user_id_idx ON inventory(user_id);
             CREATE INDEX IF NOT EXISTS inventory_item_id_idx ON inventory(item_id);
-            CREATE INDEX IF NOT EXISTS shop_item_id_idx ON shop(item_id);
         `);
 
         console.log('Database tables initialized successfully');
