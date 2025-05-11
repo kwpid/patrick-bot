@@ -158,9 +158,11 @@ async function initializeDatabase() {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS jobs (
                 user_id TEXT PRIMARY KEY,
+                job_id TEXT NOT NULL,
                 job_name TEXT NOT NULL,
                 last_worked TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
             )
         `);
 
@@ -500,7 +502,7 @@ async function updateShopItems() {
 async function getUserJob(userId) {
     try {
         const result = await pool.query(
-            'SELECT j.*, r.job_id FROM jobs j JOIN job_requirements r ON j.job_name = r.job_name WHERE j.user_id = $1',
+            'SELECT * FROM jobs WHERE user_id = $1',
             [userId]
         );
         return result.rows[0];
@@ -517,8 +519,8 @@ async function setUserJob(userId, jobId) {
             return false;
         }
         await pool.query(
-            'INSERT INTO jobs (user_id, job_name) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET job_name = $2',
-            [userId, jobReq.job_name]
+            'INSERT INTO jobs (user_id, job_id, job_name) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET job_id = $2, job_name = $3',
+            [userId, jobId, jobReq.job_name]
         );
         return true;
     } catch (error) {
@@ -608,6 +610,32 @@ async function recreateJobRequirementsTable() {
     }
 }
 
+// Safely recreate jobs table
+async function recreateJobsTable() {
+    try {
+        // Drop existing jobs table if it exists
+        await pool.query('DROP TABLE IF EXISTS jobs CASCADE');
+        
+        // Create jobs table
+        await pool.query(`
+            CREATE TABLE jobs (
+                user_id TEXT PRIMARY KEY,
+                job_id TEXT NOT NULL,
+                job_name TEXT NOT NULL,
+                last_worked TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
+            )
+        `);
+        
+        console.log('Jobs table recreated successfully');
+        return true;
+    } catch (error) {
+        console.error('Error recreating jobs table:', error);
+        return false;
+    }
+}
+
 module.exports = {
     getUserData,
     updateUserData,
@@ -626,5 +654,6 @@ module.exports = {
     updateLastWorked,
     getJobRequirements,
     getAllJobs,
-    recreateJobRequirementsTable
+    recreateJobRequirementsTable,
+    recreateJobsTable
 }; 
