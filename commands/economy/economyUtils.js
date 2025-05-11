@@ -140,7 +140,7 @@ async function initializeDatabase() {
 
         // Create shop table
         await pool.query(`
-            CREATE TABLE shop (
+            CREATE TABLE IF NOT EXISTS shop (
                 item_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 description TEXT NOT NULL,

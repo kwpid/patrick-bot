@@ -3,7 +3,7 @@ const { getUserData, generateProgressBar, formatNumber } = require('./economyUti
 
 module.exports = {
     name: 'xp',
-    description: 'check your XP and level',
+    description: 'check your xp and level',
     async execute(message, client) {
         try {
             const userData = await getUserData(message.author.id);
@@ -11,7 +11,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s XP`)
+                .setTitle(`${message.author.username}'s xp`)
                 .setDescription(
                     `*level ${userData.level}*\n` +
                     `${progressBar}\n` +

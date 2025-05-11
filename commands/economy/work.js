@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, getUserJob, updateUserData, updateLastWorked } = require('./economyUtils');
+const { runRandomGame } = require('./workGames');
 
 module.exports = {
     name: 'work',
@@ -37,52 +38,36 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Generate work question
-            const question = "What is 2 + 2?";
-            const answer = "4";
+            // Run a random game
+            const result = await runRandomGame(message);
 
-            const embed = new EmbedBuilder()
-                .setColor('#292929')
-                .setTitle(`${message.author.username}'s Work`)
-                .setDescription(`*${question}*`)
-                .setFooter({ text: 'patrick' })
-                .setTimestamp();
+            // Update last worked time
+            await updateLastWorked(message.author.id);
 
-            const response = await message.reply({ embeds: [embed] });
+            if (result.success) {
+                // Update user balance with salary
+                const salary = userJob.salary;
+                userData.balance += salary;
+                await updateUserData(message.author.id, userData);
 
-            // Create message collector
-            const filter = m => m.author.id === message.author.id;
-            const collector = response.channel.createMessageCollector({ filter, time: 30000, max: 1 });
+                const embed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${message.author.username}'s Work`)
+                    .setDescription(`${result.message}\n*you earned ${salary} <:patrickcoin:1371211412940132492>!*`)
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
 
-            collector.on('collect', async (msg) => {
-                const success = msg.content.toLowerCase() === answer.toLowerCase();
-                await updateLastWorked(message.author.id);
+                message.reply({ embeds: [embed] });
+            } else {
+                const embed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${message.author.username}'s Work`)
+                    .setDescription(`${result.message}\n*try again later!*`)
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
 
-                if (success) {
-                    // Update user balance with salary
-                    const salary = userJob.salary;
-                    userData.balance += salary;
-                    await updateUserData(message.author.id, userData);
-
-                    const embed = new EmbedBuilder()
-                        .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Work`)
-                        .setDescription(`*correct!*\n*you earned ${salary} <:patrickcoin:1371211412940132492>!*`)
-                        .setFooter({ text: 'patrick' })
-                        .setTimestamp();
-
-                    message.reply({ embeds: [embed] });
-                } else {
-                    const embed = new EmbedBuilder()
-                        .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Work`)
-                        .setDescription('*wrong! try again later!*')
-                        .setFooter({ text: 'patrick' })
-                        .setTimestamp();
-
-                    message.reply({ embeds: [embed] });
-                }
-            });
+                message.reply({ embeds: [embed] });
+            }
         } catch (error) {
             console.error('Error in work command:', error);
             message.reply("*something went wrong, try again later!*").catch(() => {});

@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { getUserData, getUserInventory, removeItemFromInventory, updateUserData } = require('./economyUtils');
 
 module.exports = {
@@ -6,24 +6,11 @@ module.exports = {
     description: 'sell an item from your inventory',
     async execute(message, client) {
         try {
-            const args = message.content.split(' ').slice(1);
-            if (args.length === 0) {
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle('patrick\'s shop')
-                    .setDescription("*what would you like to sell? use 'pa sell [item name]'*")
-                    .setFooter({ text: 'patrick' })
-                    .setTimestamp();
-                
-                return message.reply({ embeds: [embed] });
-            }
-
-            const itemName = args.join(' ').toLowerCase();
             const userData = await getUserData(message.author.id);
             if (!userData) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s shop')
+                    .setTitle(`${message.author.username}'s Shop`)
                     .setDescription("*you don't have an account yet!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -32,40 +19,113 @@ module.exports = {
             }
 
             const inventory = await getUserInventory(message.author.id);
-            const item = inventory.find(i => i.name.toLowerCase() === itemName);
-
-            if (!item) {
+            if (inventory.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s shop')
-                    .setDescription("*you don't have that item!*")
+                    .setTitle(`${message.author.username}'s Shop`)
+                    .setDescription("*your inventory is empty!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
                 
                 return message.reply({ embeds: [embed] });
             }
 
-            // Calculate sell price (50% of original price)
-            const sellPrice = Math.floor(item.price * 0.5);
-            const newBalance = userData.balance + sellPrice;
-            
-            // Remove item and update balance
-            await removeItemFromInventory(message.author.id, item.id);
-            await updateUserData(message.author.id, { balance: newBalance });
+            // Create select menu with inventory items
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('sell_item')
+                .setPlaceholder('Select an item to sell')
+                .addOptions(
+                    inventory.map(item => ({
+                        label: item.name,
+                        description: `Sell for ${Math.floor(item.price * 0.5)} coins`,
+                        value: item.item_id,
+                        emoji: `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}>`
+                    }))
+                );
+
+            const row = new ActionRowBuilder().addComponents(selectMenu);
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s shop')
-                .setDescription(`*you sold ${item.name} for ${sellPrice} <:patrickcoin:1371211412940132492>!*`)
+                .setTitle(`${message.author.username}'s Shop`)
+                .setDescription("*select an item to sell from your inventory*")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
-            message.reply({ embeds: [embed] });
+            const response = await message.reply({
+                embeds: [embed],
+                components: [row]
+            });
+
+            // Create collector for select menu interactions
+            const collector = response.createMessageComponentCollector({
+                time: 60000
+            });
+
+            collector.on('collect', async (interaction) => {
+                if (interaction.user.id !== message.author.id) {
+                    return interaction.reply({
+                        content: "*this isn't your shop!*",
+                        ephemeral: true
+                    });
+                }
+
+                const itemId = interaction.values[0];
+                const item = inventory.find(i => i.item_id === itemId);
+
+                if (!item) {
+                    return interaction.reply({
+                        content: "*this item is no longer available!*",
+                        ephemeral: true
+                    });
+                }
+
+                // Calculate sell price (50% of original price)
+                const sellPrice = Math.floor(item.price * 0.5);
+                const newBalance = userData.balance + sellPrice;
+                
+                // Remove item and update balance
+                await removeItemFromInventory(message.author.id, item.item_id);
+                await updateUserData(message.author.id, { balance: newBalance });
+
+                const sellEmbed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${message.author.username}'s Shop`)
+                    .setDescription(`*you sold ${item.name} for ${sellPrice} <:patrickcoin:1371211412940132492>!*`)
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
+
+                await interaction.reply({ embeds: [sellEmbed] });
+
+                // Update the original message to remove the select menu
+                const updatedEmbed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${message.author.username}'s Shop`)
+                    .setDescription("*shop closed!*")
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
+
+                await response.edit({ embeds: [updatedEmbed], components: [] });
+                collector.stop();
+            });
+
+            collector.on('end', () => {
+                if (!response.deleted) {
+                    const endEmbed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle(`${message.author.username}'s Shop`)
+                        .setDescription("*shop closed!*")
+                        .setFooter({ text: 'patrick' })
+                        .setTimestamp();
+
+                    response.edit({ embeds: [endEmbed], components: [] }).catch(() => {});
+                }
+            });
         } catch (error) {
             console.error('Error in sell command:', error);
             const errorEmbed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s shop')
+                .setTitle(`${message.author.username}'s Shop`)
                 .setDescription("*something went wrong, try again later!*")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
