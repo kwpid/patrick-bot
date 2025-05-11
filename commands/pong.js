@@ -3,6 +3,6 @@ module.exports = {
     description: 'Returns the bot\'s latency',
     execute(message, client) {
         const ping = client.ws.ping;
-        message.reply(`🏓 Pong! Latency is ${ping}ms.`);
+        message.reply(`Latency is ${ping}ms.`);
     }
 }; 

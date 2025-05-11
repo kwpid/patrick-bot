@@ -10,7 +10,7 @@ module.exports = {
         const botCount = guild.members.cache.filter(member => member.user.bot).size;
 
         const embed = new EmbedBuilder()
-            .setColor('#0099ff')
+            .setColor('#292929')
             .setTitle(`Server Stats for ${guild.name}`)
             .addFields(
                 { name: 'Total Members', value: totalMembers.toString(), inline: true },
