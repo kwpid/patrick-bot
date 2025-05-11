@@ -10,15 +10,14 @@ module.exports = {
             .setTimestamp();
 
         // Check if the message is a reply
-        if (message.reference && message.reference.messageId) {
-            // Get the referenced message
+        if (message.reference) {
             message.channel.messages.fetch(message.reference.messageId)
                 .then(referencedMsg => {
                     embed.setTitle("quote")
                         .setDescription(`> ${referencedMsg.content}\n*~ ${referencedMsg.author.username}*`);
                     message.reply({ embeds: [embed] });
                 })
-                .catch(error => {
+                .catch(() => {
                     embed.setTitle("error")
                         .setDescription("*i couldn't find that message*");
                     message.reply({ embeds: [embed] });
