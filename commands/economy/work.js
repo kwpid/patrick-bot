@@ -15,9 +15,12 @@ module.exports = {
             }
 
             // Check if user has worked in the last 5 minutes
-            if (userData.last_worked && Date.now() - userData.last_worked < 300000) {
-                const timeLeft = Math.ceil((300000 - (Date.now() - userData.last_worked)) / 1000);
-                return message.reply(`*you can work again in ${timeLeft} seconds!*`);
+            if (userJob.last_worked) {
+                const lastWorked = new Date(userJob.last_worked).getTime();
+                const timeLeft = Math.ceil((300000 - (Date.now() - lastWorked)) / 1000);
+                if (timeLeft > 0) {
+                    return message.reply(`*you can work again in ${timeLeft} seconds!*`);
+                }
             }
 
             // Run random minigame

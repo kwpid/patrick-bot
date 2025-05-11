@@ -313,21 +313,36 @@ async function addXp(userId, amount, message) {
             userData.xp -= userData.nextLevelXp;
             userData.nextLevelXp = calculateNextLevelXp(userData.level);
             
-            // Add coins for level up
-            userData.balance += 100;
+            // Add coins for level up - reward is 100 * level
+            const levelReward = userData.level * 100;
+            userData.balance += levelReward;
+
+            // Give chest every 5 levels
+            if (userData.level % 5 === 0) {
+                const chestLevel = Math.floor(userData.level / 5);
+                const chestId = `chest_${Math.min(chestLevel, 3)}`; // Cap at chest_3
+                await addItemToInventory(userId, chestId);
+            }
         }
 
         await updateUserData(userId, userData);
 
         // Send level up message if leveled up
         if (userData.level > oldLevel) {
+            let description = `*${message.author.username} has reached level ${userData.level}!*\n` +
+                            `*you earned ${formatNumber(userData.level * 100)} <:patrickcoin:1371211412940132492>!*`;
+
+            // Add chest message if they got one
+            if (userData.level % 5 === 0) {
+                const chestLevel = Math.floor(userData.level / 5);
+                const chestId = `chest_${Math.min(chestLevel, 3)}`;
+                description += `\n*you received a ${chests[chestId].name}!*`;
+            }
+
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('Level Up!')
-                .setDescription(
-                    `*${message.author.username} has reached level ${userData.level}!*\n` +
-                    `*you earned ${formatNumber(100)} <:patrickcoin:1371211412940132492>!*`
-                )
+                .setDescription(description)
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             
@@ -474,6 +489,7 @@ async function getShopItems() {
         const result = await pool.query(
             `SELECT * FROM shop
              WHERE on_sale = true
+             AND type != 'chest'
              ORDER BY price`
         );
         return result.rows;
@@ -486,7 +502,7 @@ async function getShopItems() {
 async function updateShopItems() {
     try {
         // Read shop items from JSON file
-        const shopItems = require('./shopItems.json').items;
+        const shopItems = require('./shopItems.json').items.filter(item => item.type !== 'chest');
         
         // Select 3-5 random items for the shop
         const numItems = Math.floor(Math.random() * 3) + 3; // Random number between 3-5
