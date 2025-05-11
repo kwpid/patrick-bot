@@ -18,7 +18,7 @@ module.exports = {
                 const timeLeft = Math.ceil((cooldownEnd - now) / 1000 / 60);
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s paycheck')
+                    .setTitle(`${message.author.username}'s Paycheck`)
                     .setDescription(`*you need to wait ${timeLeft} more minutes before getting another paycheck!*`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -30,7 +30,7 @@ module.exports = {
             if (!userData) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s paycheck')
+                    .setTitle(`${message.author.username}'s Paycheck`)
                     .setDescription("*you don't have an account yet!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -47,7 +47,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s paycheck')
+                .setTitle(`${message.author.username}'s Paycheck`)
                 .setDescription(`*here's your paycheck of ${amount} <:patrickcoin:1371211412940132492>!*`)
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
@@ -57,7 +57,7 @@ module.exports = {
             console.error('Error in paycheck command:', error);
             const errorEmbed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s paycheck')
+                .setTitle(`${message.author.username}'s Paycheck`)
                 .setDescription("*something went wrong, try again later!*")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();

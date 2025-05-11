@@ -317,12 +317,16 @@ async function addXp(userId, amount, message) {
             const levelReward = userData.level * 100;
             userData.balance += levelReward;
 
-            // Give chest every 5 levels
-            if (userData.level % 5 === 0) {
-                const chestLevel = Math.floor(userData.level / 5);
-                const chestId = `chest_${Math.min(chestLevel, 3)}`; // Cap at chest_3
-                await addItemToInventory(userId, chestId);
+            // Give chest every level
+            let chestId;
+            if (userData.level <= 5) {
+                chestId = 'chest_1'; // Basic chest for levels 1-5
+            } else if (userData.level <= 10) {
+                chestId = 'chest_2'; // Rare chest for levels 6-10
+            } else {
+                chestId = 'chest_3'; // Epic chest for levels 11+
             }
+            await addItemToInventory(userId, chestId);
         }
 
         await updateUserData(userId, userData);
@@ -332,12 +336,16 @@ async function addXp(userId, amount, message) {
             let description = `*${message.author.username} has reached level ${userData.level}!*\n` +
                             `*you earned ${formatNumber(userData.level * 100)} <:patrickcoin:1371211412940132492>!*`;
 
-            // Add chest message if they got one
-            if (userData.level % 5 === 0) {
-                const chestLevel = Math.floor(userData.level / 5);
-                const chestId = `chest_${Math.min(chestLevel, 3)}`;
-                description += `\n*you received a ${chests[chestId].name}!*`;
+            // Add chest message
+            let chestId;
+            if (userData.level <= 5) {
+                chestId = 'chest_1';
+            } else if (userData.level <= 10) {
+                chestId = 'chest_2';
+            } else {
+                chestId = 'chest_3';
             }
+            description += `\n*you received a ${chests[chestId].name}!*`;
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')

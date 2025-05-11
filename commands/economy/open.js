@@ -14,7 +14,7 @@ module.exports = {
             if (userChests.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s chests')
+                    .setTitle(`${message.author.username}'s Chests`)
                     .setDescription("*you don't have any chests to open!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -25,7 +25,7 @@ module.exports = {
             // Create embed showing available chests
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s chests')
+                .setTitle(`${message.author.username}'s Chests`)
                 .setDescription(
                     userChests.map(chest => 
                         `<:${chest.name.toLowerCase().replace(/\s+/g, '_')}:${chest.emoji_id}> **${chest.name}** ─ ${chest.quantity}\n` +
@@ -108,7 +108,7 @@ module.exports = {
                 // Create embed for rewards
                 const rewardEmbed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s chest')
+                    .setTitle(`${message.author.username}'s Chest`)
                     .setDescription(
                         `*you opened a ${chestData.name}!*\n\n` +
                         `*rewards:*\n${rewards.map(r => `• ${r}`).join('\n')}`
@@ -123,7 +123,7 @@ module.exports = {
                 if (updatedChests.length === 0) {
                     const emptyEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle('patrick\'s chests')
+                        .setTitle(`${message.author.username}'s Chests`)
                         .setDescription("*you don't have any chests to open!*")
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();
@@ -132,7 +132,7 @@ module.exports = {
                 } else {
                     const updatedEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle('patrick\'s chests')
+                        .setTitle(`${message.author.username}'s Chests`)
                         .setDescription(
                             updatedChests.map(chest => 
                                 `<:${chest.name.toLowerCase().replace(/\s+/g, '_')}:${chest.emoji_id}> **${chest.name}** ─ ${chest.quantity}\n` +

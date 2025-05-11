@@ -28,7 +28,7 @@ module.exports = {
 
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle('patrick\'s jobs')
+                    .setTitle(`${message.author.username}'s Jobs`)
                     .setDescription(
                         pageJobs.map(job => {
                             let jobDisplay = `**${job.job_name}**\n`;
@@ -54,58 +54,78 @@ module.exports = {
                 return embed;
             }
 
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('prev')
-                        .setLabel('◀')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(currentPage === 0),
-                    new ButtonBuilder()
-                        .setCustomId('next')
-                        .setLabel('▶')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(currentPage === totalPages - 1)
-                );
+            // Create navigation buttons
+            const createButtons = () => {
+                return new ActionRowBuilder()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setCustomId('first')
+                            .setLabel('≪')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setDisabled(currentPage === 0),
+                        new ButtonBuilder()
+                            .setCustomId('prev')
+                            .setLabel('◀')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setDisabled(currentPage === 0),
+                        new ButtonBuilder()
+                            .setCustomId('next')
+                            .setLabel('▶')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setDisabled(currentPage === totalPages - 1),
+                        new ButtonBuilder()
+                            .setCustomId('last')
+                            .setLabel('≫')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setDisabled(currentPage === totalPages - 1)
+                    );
+            };
 
+            // Send initial message
             const response = await message.reply({
                 embeds: [generateEmbed()],
-                components: totalPages > 1 ? [row] : []
+                components: [createButtons()]
             });
 
-            if (totalPages > 1) {
-                const collector = response.createMessageComponentCollector({
-                    time: 60000
-                });
+            // Create collector for button interactions
+            const collector = response.createMessageComponentCollector({
+                time: 60000
+            });
 
-                collector.on('collect', async (interaction) => {
-                    if (interaction.user.id !== message.author.id) {
-                        return interaction.reply({
-                            content: "*this isn't your job list!*",
-                            ephemeral: true
-                        });
-                    }
-
-                    if (interaction.customId === 'prev') {
-                        currentPage--;
-                    } else if (interaction.customId === 'next') {
-                        currentPage++;
-                    }
-
-                    row.components[0].setDisabled(currentPage === 0);
-                    row.components[1].setDisabled(currentPage === totalPages - 1);
-
-                    await interaction.update({
-                        embeds: [generateEmbed()],
-                        components: [row]
+            collector.on('collect', async (interaction) => {
+                if (interaction.user.id !== message.author.id) {
+                    return interaction.reply({
+                        content: "*this isn't your jobs menu!*",
+                        ephemeral: true
                     });
-                });
+                }
 
-                collector.on('end', () => {
-                    row.components.forEach(button => button.setDisabled(true));
-                    response.edit({ components: [row] }).catch(() => {});
+                switch (interaction.customId) {
+                    case 'first':
+                        currentPage = 0;
+                        break;
+                    case 'prev':
+                        currentPage = Math.max(0, currentPage - 1);
+                        break;
+                    case 'next':
+                        currentPage = Math.min(totalPages - 1, currentPage + 1);
+                        break;
+                    case 'last':
+                        currentPage = totalPages - 1;
+                        break;
+                }
+
+                await interaction.update({
+                    embeds: [generateEmbed()],
+                    components: [createButtons()]
                 });
-            }
+            });
+
+            collector.on('end', () => {
+                response.edit({
+                    components: []
+                }).catch(() => {});
+            });
         } catch (error) {
             console.error('Error in jobs command:', error);
             message.reply("*something went wrong, try again later!*").catch(() => {});
