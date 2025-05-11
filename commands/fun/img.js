@@ -14,6 +14,14 @@ const patrickImages = [
 "https://media.discordapp.net/attachments/799428131714367498/1371226923975446652/images.png?ex=68225e16&is=68210c96&hm=09c259dc9584b2093f6821ec8ea7d5577eac99b80b1d0c488da0b0b0e902c1bf&=&format=webp&quality=lossless",
 "https://media.discordapp.net/attachments/799428131714367498/1371226976022429806/images.png?ex=68225e23&is=68210ca3&hm=e59b26907982594dec163166378a375a74e0b0a7ef386651548e6ca3543699fb&=&format=webp&quality=lossless",
 "https://media.discordapp.net/attachments/799428131714367498/1371227044880318464/GpjXG9.png?ex=68225e33&is=68210cb3&hm=89c21099bb67ee1a89dfa64d63265ff3d20fd2da0928a0e0e36a1f80ea3060fe&=&format=webp&quality=lossless",
+"https://media.discordapp.net/attachments/987477534893551716/1371230763718148238/image0.jpg?ex=682261aa&is=6821102a&hm=a10d6baf9681cbab31429dce49783c0ba015cdbb52e5ace67738de4b5a5e9b00&=&format=webp&width=650&height=652",
+"https://cdn.discordapp.com/attachments/987477534893551716/1371230963669139466/image0.jpg?ex=682261d9&is=68211059&hm=88af40f121409f302ef398b8469a351cd3b127ca69252b0335ea9e135afa1d02&",
+"https://media.discordapp.net/attachments/987477534893551716/1371231033462095922/image0.jpg?ex=682261ea&is=6821106a&hm=8aef2b68dcbf24f6d6dc983858eaa01dd1dd540da55c120fcffbbe4779a983ed&=&format=webp&width=738&height=549",
+"https://media.discordapp.net/attachments/987477534893551716/1371231120779116694/image0.jpg?ex=682261ff&is=6821107f&hm=529816b7b54fccecb88a7ce30c3fd4bd38ab0aade1e6e587efe92493daf89260&=&format=webp",
+"https://media.discordapp.net/attachments/987477534893551716/1371231120779116694/image0.jpg?ex=682261ff&is=6821107f&hm=529816b7b54fccecb88a7ce30c3fd4bd38ab0aade1e6e587efe92493daf89260&=&format=webp",
+"https://media.discordapp.net/attachments/987477534893551716/1371231183794343956/image0.jpg?ex=6822620e&is=6821108e&hm=918bdd99d8467874d2429482aa73f2843cd653726a4bfad085d82df9bcbc2b42&=&format=webp&width=620&height=653",
+"https://media.discordapp.net/attachments/987477534893551716/1371231286533951539/image0.jpg?ex=68226226&is=682110a6&hm=bce28a1ed50779956ce6830d7ff8db091653944c98e4e332b41626ee315088df&=&format=webp&width=816&height=549",
+"https://media.discordapp.net/attachments/987477534893551716/1371231360936706131/image0.jpg?ex=68226238&is=682110b8&hm=da35e2f386d483ac441bc8d291c55e7ce0a282cd9312829c14980ab21a34b5cb&=&format=webp",
 ];
 
 module.exports = {
