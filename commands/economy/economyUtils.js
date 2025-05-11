@@ -244,11 +244,17 @@ async function getUserData(userId) {
 
         if (result.rows.length === 0) {
             // Create new user data
+            const defaultData = {
+                balance: 0,
+                level: 1,
+                xp: 0,
+                nextLevelXp: 100
+            };
             await pool.query(
                 'INSERT INTO economy (user_id, balance, level, xp, next_level_xp) VALUES ($1, $2, $3, $4, $5)',
-                [userId, defaultUserData.balance, defaultUserData.level, defaultUserData.xp, defaultUserData.nextLevelXp]
+                [userId, defaultData.balance, defaultData.level, defaultData.xp, defaultData.nextLevelXp]
             );
-            return defaultUserData;
+            return defaultData;
         }
 
         return {
@@ -272,8 +278,10 @@ async function updateUserData(userId, newData) {
              WHERE user_id = $5`,
             [newData.balance, newData.level, newData.xp, newData.nextLevelXp, userId]
         );
+        return true;
     } catch (error) {
         console.error('Error updating user data:', error);
+        return false;
     }
 }
 
@@ -284,35 +292,40 @@ function calculateNextLevelXp(currentLevel) {
 
 // Add XP to user and handle level up
 async function addXp(userId, amount, message) {
-    const userData = await getUserData(userId);
-    const oldLevel = userData.level;
-    userData.xp += amount;
+    try {
+        const userData = await getUserData(userId);
+        const oldLevel = userData.level;
+        userData.xp += amount;
 
-    // Check for level up
-    while (userData.xp >= userData.nextLevelXp) {
-        userData.level += 1;
-        userData.xp -= userData.nextLevelXp;
-        userData.nextLevelXp = calculateNextLevelXp(userData.level);
-        
-        // Add coins for level up
-        userData.balance += 100;
+        // Check for level up
+        while (userData.xp >= userData.nextLevelXp) {
+            userData.level += 1;
+            userData.xp -= userData.nextLevelXp;
+            userData.nextLevelXp = calculateNextLevelXp(userData.level);
+            
+            // Add coins for level up
+            userData.balance += 100;
+        }
+
+        await updateUserData(userId, userData);
+
+        // Send level up message if leveled up
+        if (userData.level > oldLevel) {
+            const embed = new EmbedBuilder()
+                .setColor('#292929')
+                .setTitle('Level Up!')
+                .setDescription(`*${message.author.username} has reached level ${userData.level}!*\n*you earned 100 <:patrickcoin:1371211412940132492>!*`)
+                .setFooter({ text: 'patrick' })
+                .setTimestamp();
+            
+            message.channel.send({ embeds: [embed] });
+        }
+
+        return userData;
+    } catch (error) {
+        console.error('Error adding XP:', error);
+        return null;
     }
-
-    await updateUserData(userId, userData);
-
-    // Send level up message if leveled up
-    if (userData.level > oldLevel) {
-        const embed = new EmbedBuilder()
-            .setColor('#292929')
-            .setTitle('Level Up!')
-            .setDescription(`*${message.author.username} has reached level ${userData.level}!*\n*you earned 100 <:patrickcoin:1371211412940132492>!*`)
-            .setFooter({ text: 'patrick' })
-            .setTimestamp();
-        
-        message.channel.send({ embeds: [embed] });
-    }
-
-    return userData;
 }
 
 // Track message for XP
