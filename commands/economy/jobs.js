@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getAllJobs, getUserData, getUserJob } = require('./economyUtils');
+const { getAllJobs, getUserData, getUserJob, formatNumber } = require('./economyUtils');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
 const JOBS_PER_PAGE = 5;
@@ -32,7 +32,7 @@ module.exports = {
                     .setDescription(
                         pageJobs.map(job => {
                             let jobDisplay = `**${job.job_name}**\n`;
-                            jobDisplay += `├ Salary: ${job.salary} ${PATRICK_COIN} per shift\n`;
+                            jobDisplay += `├ Salary: ${formatNumber(job.salary)} ${PATRICK_COIN} per shift\n`;
                             jobDisplay += `├ Required Level: ${job.required_level}\n`;
                             jobDisplay += `└ ID: \`${job.job_id}\``;
                             

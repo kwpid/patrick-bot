@@ -314,7 +314,10 @@ async function addXp(userId, amount, message) {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('Level Up!')
-                .setDescription(`*${message.author.username} has reached level ${userData.level}!*\n*you earned 100 <:patrickcoin:1371211412940132492>!*`)
+                .setDescription(
+                    `*${message.author.username} has reached level ${userData.level}!*\n` +
+                    `*you earned ${formatNumber(100)} <:patrickcoin:1371211412940132492>!*`
+                )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             
@@ -661,6 +664,19 @@ async function recreateJobsTable() {
     }
 }
 
+// Format number to readable format (e.g., 1.0K, 10.0K, 100.0K, 1.0M, etc.)
+function formatNumber(num) {
+    const units = ['', 'K', 'M', 'B', 'T'];
+    const k = 1000;
+    const magnitude = Math.floor(Math.log(num) / Math.log(k));
+    
+    if (magnitude === 0) return num.toString();
+    
+    const scaled = num / Math.pow(k, magnitude);
+    const formatted = scaled.toFixed(1);
+    return formatted.replace(/\.0$/, '') + units[magnitude];
+}
+
 module.exports = {
     getUserData,
     updateUserData,
@@ -680,5 +696,6 @@ module.exports = {
     getJobRequirements,
     getAllJobs,
     recreateJobRequirementsTable,
-    recreateJobsTable
+    recreateJobsTable,
+    formatNumber
 }; 

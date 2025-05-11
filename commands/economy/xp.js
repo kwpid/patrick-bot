@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, generateProgressBar } = require('./economyUtils');
+const { getUserData, generateProgressBar, formatNumber } = require('./economyUtils');
 
 module.exports = {
     name: 'xp',
@@ -15,7 +15,7 @@ module.exports = {
                 .setDescription(
                     `*level ${userData.level}*\n` +
                     `${progressBar}\n` +
-                    `*${userData.xp}/${userData.nextLevelXp} XP*`
+                    `*${formatNumber(userData.xp)}/${formatNumber(userData.nextLevelXp)} XP*`
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
