@@ -34,7 +34,7 @@ module.exports = {
                 .setTitle(`${message.author.username}'s Items`)
                 .setDescription(
                     pageItems.map(item => 
-                        `<:${item.emoji_id}> ${item.name} ─ ${item.quantity}\n` +
+                        `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}> ${item.name} ─ ${item.quantity}\n` +
                         `Description: ${item.description}\n` +
                         `Tags: ${item.tags.join(', ')}`
                     ).join('\n\n')
