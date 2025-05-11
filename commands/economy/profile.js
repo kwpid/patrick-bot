@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserJob, getUserInventory, formatNumber } = require('./economyUtils');
+const { getUserData, getUserJob, generateProgressBar, formatNumber } = require('./economyUtils');
 
 module.exports = {
     name: 'profile',
@@ -8,18 +8,16 @@ module.exports = {
         try {
             const userData = await getUserData(message.author.id);
             const userJob = await getUserJob(message.author.id);
-            const inventory = await getUserInventory(message.author.id);
+            const progressBar = generateProgressBar(userData.xp, userData.nextLevelXp);
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s profile')
+                .setTitle(`${message.author.username}'s profile`)
                 .setDescription(
-                    `*${message.author.username}*\n\n` +
-                    `*level ${userData.level}*\n` +
-                    `*${formatNumber(userData.xp)}/${formatNumber(userData.nextLevelXp)} XP*\n` +
-                    `*${formatNumber(userData.balance)} <:patrickcoin:1371211412940132492>*\n\n` +
-                    `*job: ${userJob ? userJob.job_name : 'none'}*\n` +
-                    `*inventory: ${inventory.length} items*`
+                    `*level: \`${userData.level}\`*\n` +
+                    `*${formatNumber(userData.xp)} ${progressBar}\n ${formatNumber(userData.nextLevelXp)} XP*\n` +
+                    `*bal: \`${formatNumber(userData.balance)} <:patrickcoin:1371211412940132492>\`*\n\n` +
+                    `*job: ${userJob ? userJob.job_name : 'none'}*`
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
