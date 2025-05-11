@@ -48,6 +48,9 @@ const client = new Client({
 const prefix = 'pa';
 client.commands = new Collection();
 
+// Store deleted messages
+const deletedMessages = new Map();
+
 // Load commands
 console.log('Loading commands...');
 const commandsPath = path.join(__dirname, 'commands');
@@ -98,6 +101,25 @@ client.once('ready', () => {
     }
     
     console.log(`Successfully verified access to guild: ${guild.name}`);
+});
+
+// Track deleted messages
+client.on('messageDelete', message => {
+    if (message.author.bot) return;
+    
+    const channelMessages = deletedMessages.get(message.channel.id) || [];
+    channelMessages.unshift({
+        author: message.author.tag,
+        content: message.content || '[No Content]',
+        timestamp: Date.now()
+    });
+    
+    // Keep only the last 10 messages
+    if (channelMessages.length > 10) {
+        channelMessages.pop();
+    }
+    
+    deletedMessages.set(message.channel.id, channelMessages);
 });
 
 client.on('messageCreate', async message => {
