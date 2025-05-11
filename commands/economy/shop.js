@@ -1,6 +1,8 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getShopItems, updateShopItems, addItemToInventory, getUserData } = require('./economyUtils');
 
+const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
+
 module.exports = {
     name: 'shop',
     description: 'shows the shop with daily items',
@@ -37,9 +39,9 @@ module.exports = {
                             Math.floor(item.price * (1 - item.discount)) : 
                             item.price;
                         
-                        let itemDisplay = `<:${item.emoji_id}> **${item.name}**\n`;
-                        itemDisplay += `└ Price: ${hasDiscount ? `~~${item.price}~~ **${finalPrice}**` : finalPrice} coins\n`;
-                        itemDisplay += `└ Description: ${item.description}\n`;
+                        let itemDisplay = `${item.emoji_id} **${item.name}**\n`;
+                        itemDisplay += `├ Price: ${hasDiscount ? `~~${item.price}~~ **${finalPrice}**` : finalPrice} ${PATRICK_COIN}\n`;
+                        itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
                         
                         if (hasDiscount) {
@@ -129,7 +131,7 @@ module.exports = {
 
                     await addItemToInventory(message.author.id, item.id);
                     await itemInteraction.reply({
-                        content: `*you bought ${item.name} for ${finalPrice} coins!*`,
+                        content: `*you bought ${item.name} for ${finalPrice} ${PATRICK_COIN}!*`,
                         ephemeral: true
                     });
 
