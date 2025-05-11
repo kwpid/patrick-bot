@@ -22,7 +22,19 @@ const patrickImages = [
 "https://media.discordapp.net/attachments/987477534893551716/1371231183794343956/image0.jpg?ex=6822620e&is=6821108e&hm=918bdd99d8467874d2429482aa73f2843cd653726a4bfad085d82df9bcbc2b42&=&format=webp&width=620&height=653",
 "https://media.discordapp.net/attachments/987477534893551716/1371231286533951539/image0.jpg?ex=68226226&is=682110a6&hm=bce28a1ed50779956ce6830d7ff8db091653944c98e4e332b41626ee315088df&=&format=webp&width=816&height=549",
 "https://media.discordapp.net/attachments/987477534893551716/1371231360936706131/image0.jpg?ex=68226238&is=682110b8&hm=da35e2f386d483ac441bc8d291c55e7ce0a282cd9312829c14980ab21a34b5cb&=&format=webp",
+"https://media.discordapp.net/attachments/987477534893551716/1371232394044113077/image0.jpg?ex=6822632f&is=682111af&hm=76abe630f9a5fe5f0d56f40e1437552455987a1daa2a0b60f5c5ea279f130c8f&=&format=webp&width=740&height=549",
+"https://media.discordapp.net/attachments/987477534893551716/1371233104890564668/image0.jpg?ex=682263d8&is=68211258&hm=9d69d7dd492f4968512e8b95f2d212f89291ca4cbe165f13724cc8afce16474a&=&format=webp&width=773&height=549",
+"https://media.discordapp.net/attachments/987477534893551716/1371233176634261626/image0.jpg?ex=682263e9&is=68211269&hm=0a19d393b454a0a4d333eb07772305c65b7c71b514a1604428a1475bcebb16fa&=&format=webp&width=654&height=653",
+"https://media.discordapp.net/attachments/987477534893551716/1371233238194065560/image0.jpg?ex=682263f8&is=68211278&hm=84200090e90870c69c2ba1eb78f6b85c5e461caeec3e95d814b008d1771d46cc&=&format=webp&width=637&height=652",
+"https://media.discordapp.net/attachments/987477534893551716/1371233375779819570/image0.jpg?ex=68226419&is=68211299&hm=a7c77bb9fef71a5c6cc09eca366df8719a965b66dc562b17894d8e0b0e5a8a5d&=&format=webp&width=664&height=653",
+"https://media.discordapp.net/attachments/987477534893551716/1371233614146174986/image0.jpg?ex=68226451&is=682112d1&hm=156d15993ac9481a282298a3fd312fa802253767af95ccac09297f3bde5dae32&=&format=webp&width=433&height=653",
+"https://media.discordapp.net/attachments/987477534893551716/1371233922889027665/image0.jpg?ex=6822649b&is=6821131b&hm=628aa0bf4483c1ae396df0b72d4c8a4999eff9ca5206082cba0386648969dcbe&=&format=webp&width=736&height=549",
+"https://media.discordapp.net/attachments/987477534893551716/1371234077889269830/image0.jpg?ex=682264c0&is=68211340&hm=4b8b980a470bfa68429f3802ee3e41e523375770b71e542a066a9a667ee616b6&=&format=webp&width=657&height=653",
+
 ];
+
+// Keep track of the last image shown
+let lastImage = null;
 
 module.exports = {
     name: 'img',
@@ -39,7 +51,15 @@ module.exports = {
             return message.reply({ embeds: [embed] });
         }
 
-        const randomImage = patrickImages[Math.floor(Math.random() * patrickImages.length)];
+        // Get a random image that's different from the last one
+        let randomImage;
+        do {
+            randomImage = patrickImages[Math.floor(Math.random() * patrickImages.length)];
+        } while (randomImage === lastImage && patrickImages.length > 1);
+        
+        // Update last image
+        lastImage = randomImage;
+
         const embed = new EmbedBuilder()
             .setColor('#292929')
             .setTitle("look at me!")
