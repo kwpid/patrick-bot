@@ -32,14 +32,21 @@ module.exports = {
                 .setTitle('patrick\'s shop')
                 .setDescription(
                     shopItems.map(item => {
-                        const price = item.discount ? 
-                            `~~${item.price}~~ **${Math.floor(item.price * (1 - item.discount))}**` : 
+                        const hasDiscount = item.discount > 0;
+                        const finalPrice = hasDiscount ? 
+                            Math.floor(item.price * (1 - item.discount)) : 
                             item.price;
                         
-                        return `<:${item.emoji_id}> ${item.name} ─ ${price} coins\n` +
-                               `Description: ${item.description}\n` +
-                               `Tags: ${item.tags.join(', ')}` +
-                               (item.discount ? `\n**${Math.floor(item.discount * 100)}% OFF!**` : '');
+                        let itemDisplay = `<:${item.emoji_id}> **${item.name}**\n`;
+                        itemDisplay += `└ Price: ${hasDiscount ? `~~${item.price}~~ **${finalPrice}**` : finalPrice} coins\n`;
+                        itemDisplay += `└ Description: ${item.description}\n`;
+                        itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
+                        
+                        if (hasDiscount) {
+                            itemDisplay += `\n└ **${Math.floor(item.discount * 100)}% OFF!**`;
+                        }
+                        
+                        return itemDisplay;
                     }).join('\n\n')
                 )
                 .setFooter({ text: 'patrick' })
@@ -109,7 +116,7 @@ module.exports = {
 
                     const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
                     const item = shopItems[itemIndex];
-                    const finalPrice = item.discount ? 
+                    const finalPrice = item.discount > 0 ? 
                         Math.floor(item.price * (1 - item.discount)) : 
                         item.price;
 
