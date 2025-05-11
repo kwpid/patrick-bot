@@ -19,25 +19,11 @@ module.exports = {
             // Check if user is admin and wants to refresh shop
             if (message.content.toLowerCase().includes('refresh')) {
                 if (!message.member.permissions.has('Administrator')) {
-                    const embed = new EmbedBuilder()
-                        .setColor('#292929')
-                        .setTitle('patrick\'s shop')
-                        .setDescription("*only administrators can refresh the shop!*")
-                        .setFooter({ text: 'patrick' })
-                        .setTimestamp();
-                    
-                    return message.reply({ embeds: [embed] });
+                    return message.reply("*only administrators can refresh the shop!*");
                 }
 
                 await updateShopItems();
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle('patrick\'s shop')
-                    .setDescription("*shop has been refreshed!*")
-                    .setFooter({ text: 'patrick' })
-                    .setTimestamp();
-                
-                return message.reply({ embeds: [embed] });
+                return message.reply("*shop has been refreshed!*");
             }
 
             let shopItems = await getShopItems();
@@ -50,14 +36,7 @@ module.exports = {
 
             // If still no items, show error message
             if (!shopItems || shopItems.length === 0) {
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle('patrick\'s shop')
-                    .setDescription("*the shop is empty right now, check back later!*")
-                    .setFooter({ text: 'patrick' })
-                    .setTimestamp();
-                
-                return message.reply({ embeds: [embed] });
+                return message.reply("*the shop is empty right now, check back later!*");
             }
 
             const embed = new EmbedBuilder()
@@ -65,20 +44,10 @@ module.exports = {
                 .setTitle('patrick\'s shop')
                 .setDescription(
                     shopItems.map(item => {
-                        const hasDiscount = item.discount > 0;
-                        const finalPrice = hasDiscount ? 
-                            Math.floor(item.price * (1 - item.discount)) : 
-                            item.price;
-                        
-                        let itemDisplay = `<:${item.name.toLowerCase()}:${item.emoji_id}> **${item.name}**\n`;
-                        itemDisplay += `├ Price: ${hasDiscount ? `~~${item.price}~~ **${finalPrice}**` : finalPrice} ${PATRICK_COIN}\n`;
+                        let itemDisplay = `${item.emoji_id} **${item.name}**\n`;
+                        itemDisplay += `├ Price: ${item.price} ${PATRICK_COIN}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
-                        
-                        if (hasDiscount) {
-                            itemDisplay += `\n└ **${Math.floor(item.discount * 100)}% OFF!**`;
-                        }
-                        
                         return itemDisplay;
                     }).join('\n\n')
                 )
@@ -118,20 +87,24 @@ module.exports = {
                     });
                 }
 
-                // Create a new row with buttons for each item
-                const itemRow = new ActionRowBuilder()
-                    .addComponents(
-                        ...shopItems.map((item, index) => 
-                            new ButtonBuilder()
-                                .setCustomId(`buy_${index}`)
-                                .setLabel(`Buy ${item.name}`)
-                                .setStyle(ButtonStyle.Secondary)
-                        )
-                    );
+                // Create rows with buttons for each item (max 5 buttons per row)
+                const rows = [];
+                for (let i = 0; i < shopItems.length; i += 5) {
+                    const itemRow = new ActionRowBuilder()
+                        .addComponents(
+                            ...shopItems.slice(i, i + 5).map((item, index) => 
+                                new ButtonBuilder()
+                                    .setCustomId(`buy_${i + index}`)
+                                    .setLabel(`Buy ${item.name}`)
+                                    .setStyle(ButtonStyle.Secondary)
+                            )
+                        );
+                    rows.push(itemRow);
+                }
 
                 await interaction.reply({
                     content: "*which item would you like to buy?*",
-                    components: [itemRow],
+                    components: rows,
                     ephemeral: true
                 });
 
@@ -149,11 +122,8 @@ module.exports = {
 
                     const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
                     const item = shopItems[itemIndex];
-                    const finalPrice = item.discount > 0 ? 
-                        Math.floor(item.price * (1 - item.discount)) : 
-                        item.price;
 
-                    if (userData.balance < finalPrice) {
+                    if (userData.balance < item.price) {
                         return itemInteraction.reply({
                             content: "*you don't have enough coins!*",
                             ephemeral: true
@@ -163,7 +133,7 @@ module.exports = {
                     try {
                         await addItemToInventory(message.author.id, item.id);
                         await itemInteraction.reply({
-                            content: `*you bought ${item.name} for ${finalPrice} ${PATRICK_COIN}!*`,
+                            content: `*you bought ${item.name} for ${item.price} ${PATRICK_COIN}!*`,
                             ephemeral: true
                         });
                     } catch (error) {
@@ -191,14 +161,7 @@ module.exports = {
             });
         } catch (error) {
             console.error('Error in shop command:', error);
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#292929')
-                .setTitle('patrick\'s shop')
-                .setDescription("*something went wrong, try again later!*")
-                .setFooter({ text: 'patrick' })
-                .setTimestamp();
-            
-            message.reply({ embeds: [errorEmbed] }).catch(() => {});
+            message.reply("*something went wrong, try again later!*").catch(() => {});
         }
     }
 }; 
