@@ -358,9 +358,9 @@ async function updateShopItems() {
             .sort(() => Math.random() - 0.5)
             .slice(0, numItems);
         
-        // Add random discounts to some items
+        // Add random discounts to some items (25% chance)
         const itemsWithDiscounts = selectedItems.map(item => {
-            const hasDiscount = Math.random() < 0.3; // 30% chance of discount
+            const hasDiscount = Math.random() < 0.25; // 25% chance of discount
             const discount = hasDiscount ? Math.random() * 0.3 + 0.1 : 0; // 10-40% discount
             return {
                 ...item,
