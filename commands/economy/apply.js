@@ -7,12 +7,13 @@ module.exports = {
     aliases: ['job'],
     async execute(message, client) {
         try {
-            const args = message.content.split(' ').slice(1);
-            if (args.length === 0) {
+            // Get everything after the command name
+            const content = message.content.slice(5).trim(); // Remove 'pa apply'
+            if (!content) {
                 return message.reply("*please specify a job ID to apply for! use pa jobs to see available jobs.*");
             }
 
-            const jobId = args[0].toLowerCase();
+            const jobId = content.toLowerCase();
             console.log('Applying for job ID:', jobId);
             
             const jobReq = await getJobRequirements(jobId);

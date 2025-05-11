@@ -122,7 +122,7 @@ client.once('ready', () => {
 
 // Track deleted messages
 client.on('messageDelete', message => {
-    if (message.author.bot) return;
+    if (!message || message.author?.bot) return;
     
     const channelMessages = deletedMessages.get(message.channel.id) || [];
     channelMessages.unshift({
