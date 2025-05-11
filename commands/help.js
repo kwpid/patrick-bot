@@ -7,7 +7,7 @@ module.exports = {
     description: 'Shows a list of all available commands',
     execute(message, client) {
         const commandsEmbed = new EmbedBuilder()
-            .setColor('#0099ff')
+            .setColor('#292929')
             .setTitle('Available Commands')
             .setDescription('Here are all the available commands:');
 
