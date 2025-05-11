@@ -26,7 +26,7 @@ module.exports = {
         try {
             const userJob = await getUserJob(message.author.id);
             if (!userJob) {
-                return message.reply("*you don't have a job! use pa apply [job] to get one!*");
+                return message.reply("*you don't have a job! use pa apply [job_id] to get one!*");
             }
 
             // Check cooldown
@@ -40,7 +40,11 @@ module.exports = {
                 }
             }
 
-            const jobReq = await getJobRequirements(userJob.job_name);
+            const jobReq = await getJobRequirements(userJob.job_id);
+            if (!jobReq) {
+                return message.reply("*your job no longer exists! use pa apply [job_id] to get a new one!*");
+            }
+
             const phrase = phrases[Math.floor(Math.random() * phrases.length)];
 
             const embed = new EmbedBuilder()

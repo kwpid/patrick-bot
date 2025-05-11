@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "A Discord bot with prefix commands",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "postinstall": "npm cache clean --force"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
