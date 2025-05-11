@@ -14,10 +14,10 @@ module.exports = {
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s profile`)
                 .setDescription(
-                    `*level: \`${userData.level}\`*\n` +
-                    `*${formatNumber(userData.xp)} ${progressBar}\n ${formatNumber(userData.nextLevelXp)} XP*\n` +
-                    `*bal: \`${formatNumber(userData.balance)} <:patrickcoin:1371211412940132492>\`*\n\n` +
-                    `*job: ${userJob ? userJob.job_name : 'none'}*`
+                    `level: \`${userData.level}\`*\n` +
+                    `${formatNumber(userData.xp)} ${progressBar} ${formatNumber(userData.nextLevelXp)} XP\n` +
+                    `bal: ${formatNumber(userData.balance)} <:patrickcoin:1371211412940132492>\n` +
+                    `job: ${userJob ? userJob.job_name : 'none'}*`
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
