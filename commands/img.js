@@ -6,9 +6,9 @@ const { EmbedBuilder } = require('discord.js');
 // 3. Click "Copy Media Link" or "Copy Image Address"
 // 4. The URL should look like: https://cdn.discordapp.com/attachments/...
 const patrickImages = [
-    // Add your image URLs here, for example:
-    // "https://cdn.discordapp.com/attachments/123456789/987654321/patrick1.png",
-    // "https://cdn.discordapp.com/attachments/123456789/987654321/patrick2.png",
+"https://media.discordapp.net/attachments/799428131714367498/1371205284898275409/Z.png?ex=682249ef&is=6820f86f&hm=94144c803c1275eb662aa35ccfa886d74386fa9561af0fbf288ddfa8dba354da&=&format=webp&quality=lossless&width=162&height=253",
+"https://media.discordapp.net/attachments/799428131714367498/1371205306599608391/2Q.png?ex=682249f4&is=6820f874&hm=fc3c8706f4b694d6acfaf7701d133162b3836e1f27903a9d96e7a326f9b6ff9a&=&format=webp&quality=lossless&width=202&height=202",
+"https://media.discordapp.net/attachments/799428131714367498/1371205511357403166/9k.png?ex=68224a25&is=6820f8a5&hm=593faed672244f6ce5376ff8432e906964205903517a5eb29d3d8dc442aa9f8c&=&format=webp&quality=lossless&width=165&height=248",
 ];
 
 module.exports = {
