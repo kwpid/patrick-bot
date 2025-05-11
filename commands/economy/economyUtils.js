@@ -154,10 +154,53 @@ async function initializeDatabase() {
             )
         `);
 
+        // Create jobs table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS jobs (
+                user_id TEXT PRIMARY KEY,
+                job_name TEXT NOT NULL,
+                last_worked TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create job requirements table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS job_requirements (
+                job_name TEXT PRIMARY KEY,
+                required_level INTEGER NOT NULL,
+                salary INTEGER NOT NULL
+            )
+        `);
+
         // Initialize shop items only if the shop is empty
         const shopItems = await getShopItems();
         if (!shopItems || shopItems.length === 0) {
             await initializeShopItems();
+        }
+
+        // Initialize job requirements if empty
+        const jobCheck = await pool.query('SELECT COUNT(*) FROM job_requirements');
+        if (jobCheck.rows[0].count === '0') {
+            const jobs = [
+                ['Lemonade Booth', 0, 200],
+                ['Chum Bucket Janitor', 3, 350],
+                ['Kelp Shake Server', 5, 500],
+                ['Boating School Assistant', 8, 650],
+                ['Jellyfish Jelly Harvester', 11, 800],
+                ['Lifeguard at Goo Lagoon', 14, 1000],
+                ['Sandy\'s Lab Assistant', 17, 1200],
+                ['Atlantis Tour Guide', 21, 1500],
+                ['Krusty Krab Manager', 25, 1800],
+                ['Krusty Krab Owner', 30, 2500]
+            ];
+
+            for (const [job, level, salary] of jobs) {
+                await pool.query(
+                    'INSERT INTO job_requirements (job_name, required_level, salary) VALUES ($1, $2, $3)',
+                    [job, level, salary]
+                );
+            }
         }
 
         // Create other indexes
@@ -452,6 +495,69 @@ async function updateShopItems() {
     }
 }
 
+// Job-related functions
+async function getUserJob(userId) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM jobs WHERE user_id = $1',
+            [userId]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error getting user job:', error);
+        return null;
+    }
+}
+
+async function setUserJob(userId, jobName) {
+    try {
+        await pool.query(
+            'INSERT INTO jobs (user_id, job_name) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET job_name = $2',
+            [userId, jobName]
+        );
+        return true;
+    } catch (error) {
+        console.error('Error setting user job:', error);
+        return false;
+    }
+}
+
+async function updateLastWorked(userId) {
+    try {
+        await pool.query(
+            'UPDATE jobs SET last_worked = CURRENT_TIMESTAMP WHERE user_id = $1',
+            [userId]
+        );
+        return true;
+    } catch (error) {
+        console.error('Error updating last worked:', error);
+        return false;
+    }
+}
+
+async function getJobRequirements(jobName) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM job_requirements WHERE job_name = $1',
+            [jobName]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error getting job requirements:', error);
+        return null;
+    }
+}
+
+async function getAllJobs() {
+    try {
+        const result = await pool.query('SELECT * FROM job_requirements ORDER BY required_level');
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting all jobs:', error);
+        return [];
+    }
+}
+
 module.exports = {
     getUserData,
     updateUserData,
@@ -464,5 +570,10 @@ module.exports = {
     addItemToInventory,
     removeItemFromInventory,
     getShopItems,
-    updateShopItems
+    updateShopItems,
+    getUserJob,
+    setUserJob,
+    updateLastWorked,
+    getJobRequirements,
+    getAllJobs
 }; 
