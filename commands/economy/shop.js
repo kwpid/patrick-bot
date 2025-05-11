@@ -44,7 +44,7 @@ module.exports = {
                 .setTitle('patrick\'s shop')
                 .setDescription(
                     shopItems.map(item => {
-                        let itemDisplay = `<:${item.name.toLowerCase()}:${item.emoji_id}> **${item.name}**\n`;
+                        let itemDisplay = `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}> **${item.name}**\n`;
                         itemDisplay += `├ Price: ${item.price} ${PATRICK_COIN}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
