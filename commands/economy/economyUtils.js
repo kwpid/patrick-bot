@@ -570,8 +570,11 @@ async function getAllJobs() {
 // Safely recreate job requirements table
 async function recreateJobRequirementsTable() {
     try {
+        console.log('Starting job requirements table recreation...');
+        
         // Drop existing job requirements table if it exists
         await pool.query('DROP TABLE IF EXISTS job_requirements CASCADE');
+        console.log('Dropped existing job_requirements table');
         
         // Create job requirements table
         await pool.query(`
@@ -582,6 +585,7 @@ async function recreateJobRequirementsTable() {
                 salary INTEGER NOT NULL
             )
         `);
+        console.log('Created new job_requirements table');
 
         // Initialize job requirements
         const jobs = [
@@ -597,12 +601,18 @@ async function recreateJobRequirementsTable() {
             ['krab_owner', 'Krusty Krab Owner', 30, 2500]
         ];
 
+        console.log('Inserting jobs into job_requirements table...');
         for (const [id, name, level, salary] of jobs) {
             await pool.query(
                 'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
                 [id, name, level, salary]
             );
+            console.log(`Inserted job: ${id} (${name})`);
         }
+
+        // Verify the jobs were inserted
+        const verifyResult = await pool.query('SELECT * FROM job_requirements');
+        console.log('Verification - Jobs in table:', verifyResult.rows);
         
         console.log('Job requirements table recreated successfully');
         return true;
