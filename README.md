@@ -17,6 +17,16 @@ A Discord bot with prefix commands using Discord.js v14, designed to be guild-sp
 
 ## Setup Instructions
 
+### Discord Bot Setup
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Select your bot application
+3. Go to the "Bot" section
+4. Under "Privileged Gateway Intents", enable:
+   - PRESENCE INTENT
+   - SERVER MEMBERS INTENT
+   - MESSAGE CONTENT INTENT
+5. Save your changes
+
 ### Local Development
 1. Install Node.js (v16.9.0 or higher)
 2. Clone this repository
