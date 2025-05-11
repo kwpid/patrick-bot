@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getShopItems, updateShopItems, addItemToInventory, getUserData, updateUserData } = require('./economyUtils');
+const { getShopItems, updateShopItems, addItemToInventory, getUserData, updateUserData, formatNumber } = require('./economyUtils');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
 
@@ -46,7 +46,7 @@ module.exports = {
                 .setDescription(
                     shopItems.map(item => {
                         let itemDisplay = `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}> **${item.name}**\n`;
-                        itemDisplay += `├ Price: ${item.price} ${PATRICK_COIN}\n`;
+                        itemDisplay += `├ Price: ${formatNumber(item.price)} ${PATRICK_COIN}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
                         return itemDisplay;
@@ -141,7 +141,7 @@ module.exports = {
                         
                         if (success) {
                             await itemInteraction.reply({
-                                content: `*you bought ${item.name} for ${item.price} ${PATRICK_COIN}!*`,
+                                content: `*you bought ${item.name} for ${formatNumber(item.price)} ${PATRICK_COIN}!*`,
                                 ephemeral: true
                             });
                         } else {

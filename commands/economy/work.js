@@ -1,48 +1,41 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserJob, updateUserData, updateLastWorked, formatNumber } = require('./economyUtils');
+const { getUserData, getUserJob, updateUserData, updateLastWorked } = require('./economyUtils');
 const { runRandomGame } = require('./workGames');
 
 module.exports = {
     name: 'work',
-    description: 'work at your job',
+    description: 'work for your salary',
     async execute(message, client) {
         try {
             const userData = await getUserData(message.author.id);
             const userJob = await getUserJob(message.author.id);
 
             if (!userJob) {
-                return message.reply("*you don't have a job! use `pa apply` to get one.*");
+                return message.reply("*you need a job first! use `pa jobs` to see available jobs.*");
             }
 
-            // Check if user has worked recently (5 minute cooldown)
-            const lastWorked = userJob.last_worked ? new Date(userJob.last_worked) : null;
-            const now = new Date();
-            if (lastWorked && (now - lastWorked) < 5 * 60 * 1000) {
-                const timeLeft = Math.ceil((5 * 60 * 1000 - (now - lastWorked)) / 1000);
+            // Check if user has worked in the last 5 minutes
+            if (userData.last_worked && Date.now() - userData.last_worked < 300000) {
+                const timeLeft = Math.ceil((300000 - (Date.now() - userData.last_worked)) / 1000);
                 return message.reply(`*you can work again in ${timeLeft} seconds!*`);
             }
 
-            // Run a random minigame
-            const gameResult = await runRandomGame(message);
-            
-            // Update last worked time regardless of success/failure
+            // Run random minigame
+            const success = await runRandomGame(message);
+
+            // Update last worked time regardless of success
             await updateLastWorked(message.author.id);
-            
-            if (gameResult.success) {
-                // Validate salary is a positive number
-                const salary = Math.max(0, Math.floor(userJob.salary)) || 0;
-                
-                // Add salary to balance
-                userData.balance = (userData.balance || 0) + salary;
+
+            if (success) {
+                // Update user balance with salary
+                const salary = userJob.salary;
+                userData.balance += salary;
                 await updateUserData(message.author.id, userData);
 
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle('patrick\'s work')
-                    .setDescription(
-                        `${gameResult.message}\n` +
-                        `*you earned ${formatNumber(salary)} <:patrickcoin:1371211412940132492>!*`
-                    )
+                    .setDescription(`*correct!*\n*you earned ${salary} <:patrickcoin:1371211412940132492>!*`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -51,10 +44,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle('patrick\'s work')
-                    .setDescription(
-                        `${gameResult.message}\n` +
-                        '*you didn\'t earn any coins this time!*'
-                    )
+                    .setDescription('*wrong! try again later!*')
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 

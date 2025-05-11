@@ -526,7 +526,10 @@ async function updateShopItems() {
 async function getUserJob(userId) {
     try {
         const result = await pool.query(
-            'SELECT * FROM jobs WHERE user_id = $1',
+            `SELECT j.*, jr.salary 
+             FROM jobs j 
+             JOIN job_requirements jr ON j.job_id = jr.job_id 
+             WHERE j.user_id = $1`,
             [userId]
         );
         return result.rows[0];
