@@ -500,7 +500,7 @@ async function updateShopItems() {
 async function getUserJob(userId) {
     try {
         const result = await pool.query(
-            'SELECT * FROM jobs WHERE user_id = $1',
+            'SELECT j.*, r.job_id FROM jobs j JOIN job_requirements r ON j.job_name = r.job_name WHERE j.user_id = $1',
             [userId]
         );
         return result.rows[0];
@@ -510,11 +510,15 @@ async function getUserJob(userId) {
     }
 }
 
-async function setUserJob(userId, jobName) {
+async function setUserJob(userId, jobId) {
     try {
+        const jobReq = await getJobRequirements(jobId);
+        if (!jobReq) {
+            return false;
+        }
         await pool.query(
             'INSERT INTO jobs (user_id, job_name) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET job_name = $2',
-            [userId, jobName]
+            [userId, jobReq.job_name]
         );
         return true;
     } catch (error) {

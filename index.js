@@ -140,32 +140,29 @@ client.on('messageDelete', message => {
 });
 
 client.on('messageCreate', async message => {
-    // Ignore messages from other guilds
-    if (message.guild.id !== GUILD_ID) return;
-    
+    if (message.author.bot) return;
+
     // Track message for XP
     await trackMessage(message);
-    
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const prefix = 'pa ';
+    if (!message.content.startsWith(prefix)) return;
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
 
-    const command = client.commands.get(commandName);
+    const command = client.commands.get(commandName) || 
+                   client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
-    if (!command) {
-        console.log(`Command not found: ${commandName}`);
-        return;
-    }
+    if (!command) return;
 
     try {
-        console.log(`Executing command: ${commandName}`);
+        await command.execute(message, client);
         // Track command for XP
         await trackCommand(message);
-        await command.execute(message, client);
     } catch (error) {
-        console.error(`Error executing command ${commandName}:`, error);
-        message.reply('There was an error executing that command.').catch(console.error);
+        console.error('Error executing command:', error);
+        message.reply("*something went wrong, try again later!*").catch(() => {});
     }
 });
 
