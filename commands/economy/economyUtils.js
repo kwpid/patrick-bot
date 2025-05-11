@@ -138,11 +138,27 @@ async function initializeDatabase() {
             )
         `);
 
-        // Recreate shop table
-        await recreateShopTable();
+        // Create shop table if it doesn't exist
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS shop (
+                item_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price INTEGER NOT NULL,
+                emoji_id TEXT NOT NULL,
+                tags TEXT[] NOT NULL,
+                value INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                on_sale BOOLEAN DEFAULT true,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
-        // Initialize shop items
-        await initializeShopItems();
+        // Initialize shop items only if the shop is empty
+        const shopItems = await getShopItems();
+        if (!shopItems || shopItems.length === 0) {
+            await initializeShopItems();
+        }
 
         // Create other indexes
         await pool.query(`
