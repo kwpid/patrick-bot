@@ -160,11 +160,19 @@ module.exports = {
                         });
                     }
 
-                    await addItemToInventory(message.author.id, item.id);
-                    await itemInteraction.reply({
-                        content: `*you bought ${item.name} for ${finalPrice} ${PATRICK_COIN}!*`,
-                        ephemeral: true
-                    });
+                    try {
+                        await addItemToInventory(message.author.id, item.id);
+                        await itemInteraction.reply({
+                            content: `*you bought ${item.name} for ${finalPrice} ${PATRICK_COIN}!*`,
+                            ephemeral: true
+                        });
+                    } catch (error) {
+                        console.error('Error adding item to inventory:', error);
+                        await itemInteraction.reply({
+                            content: "*something went wrong while buying the item!*",
+                            ephemeral: true
+                        });
+                    }
 
                     itemCollector.stop();
                 });
