@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserInventory } = require('./economyUtils');
+const { getUserData } = require('./economyUtils');
 
 module.exports = {
     name: 'profile',
@@ -23,23 +23,17 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            const inventory = await getUserInventory(userId);
             const xpForNextLevel = Math.floor(100 * Math.pow(1.5, userData.level));
             const progress = (userData.xp / xpForNextLevel) * 100;
             const progressBar = createProgressBar(progress);
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${targetUser.username}'s profile`)
-                .setThumbnail(targetUser.displayAvatarURL({ dynamic: true }))
+                .setTitle(`${targetUser.username}'s Profile`)
                 .addFields(
-                    { name: 'level', value: `${userData.level}`, inline: true },
-                    { name: 'xp', value: `${userData.xp}/${xpForNextLevel}`, inline: true },
-                    { name: 'progress', value: progressBar, inline: false },
-                    { name: 'balance', value: `${userData.balance} <:patrickcoin:1371211412940132492>`, inline: true },
-                    { name: 'inventory', value: inventory.length > 0 ? 
-                        inventory.map(item => `${item.emoji_id} ${item.name} (x${item.quantity})`).join('\n') : 
-                        '*empty*', inline: false }
+                    { name: 'level', value: `${userData.level}`, inline: false },
+                    { name: 'progress', value: `${userData.xp}/${xpForNextLevel} XP\n${progressBar}`, inline: false },
+                    { name: 'balance', value: `${userData.balance} <:patrickcoin:1371211412940132492>`, inline: false }
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
@@ -62,5 +56,20 @@ module.exports = {
 function createProgressBar(progress) {
     const filled = Math.floor(progress / 10);
     const empty = 10 - filled;
-    return `[${'█'.repeat(filled)}${'░'.repeat(empty)}] ${Math.floor(progress)}%`;
+    
+    // Left segment
+    let bar = filled > 0 ? '<:left_filled:1366792481500299416>' : '<:left_empty:1366791939168403556>';
+    
+    // Middle segments
+    if (filled > 1) {
+        bar += '<:middle_filled:1366792454749294824>'.repeat(filled - 1);
+    }
+    if (empty > 1) {
+        bar += '<:middle_empty:1366791972651667579>'.repeat(empty - 1);
+    }
+    
+    // Right segment
+    bar += filled === 10 ? '<:right_filled:1366792357722198068>' : '<:right_empty:1366791994847789148>';
+    
+    return bar;
 } 

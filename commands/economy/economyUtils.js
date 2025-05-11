@@ -68,6 +68,41 @@ async function recreateShopTable() {
     }
 }
 
+// Initialize shop items
+async function initializeShopItems() {
+    try {
+        const shopItems = require('./shopItems.json').items;
+        
+        // Insert all items into shop table
+        for (const item of shopItems) {
+            await pool.query(
+                `INSERT INTO shop (
+                    item_id, name, description, price, emoji_id, 
+                    tags, value, type, on_sale, discount
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (item_id) DO NOTHING`,
+                [
+                    item.id,
+                    item.name,
+                    item.description,
+                    item.price,
+                    item.emoji_id,
+                    item.tags,
+                    item.value,
+                    item.type,
+                    true,
+                    0
+                ]
+            );
+        }
+        console.log('Shop items initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('Error initializing shop items:', error);
+        return false;
+    }
+}
+
 // Initialize database tables
 async function initializeDatabase() {
     try {
@@ -98,12 +133,16 @@ async function initializeDatabase() {
                 item_id TEXT,
                 quantity INTEGER DEFAULT 1,
                 PRIMARY KEY (user_id, item_id),
-                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (item_id) REFERENCES shop(item_id) ON DELETE CASCADE
             )
         `);
 
         // Recreate shop table
         await recreateShopTable();
+
+        // Initialize shop items
+        await initializeShopItems();
 
         // Create other indexes
         await pool.query(`
@@ -376,7 +415,7 @@ async function updateShopItems() {
                     tags, value, type, on_sale, discount
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
                 [
-                    item.id,
+                    item.id, // Use the id from JSON as item_id
                     item.name,
                     item.description,
                     item.price,
@@ -384,7 +423,7 @@ async function updateShopItems() {
                     item.tags,
                     item.value,
                     item.type,
-                    item.on_sale,
+                    true, // Always set on_sale to true for shop items
                     item.discount
                 ]
             );
