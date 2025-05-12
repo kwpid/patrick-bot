@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const { EmbedBuilder } = require('discord.js');
+const { chests } = require('./chests.json');
 
 // Create a new pool using Railway's DATABASE_URL
 const pool = new Pool({
@@ -372,7 +373,7 @@ async function addXp(userId, amount, message) {
             } else {
                 chestId = 'chest_3';
             }
-            description += `\n*you received a ${chests[chestId].name}!*`;
+            description += `\n*you received a ${chests.chests[chestId].name}!*`;
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
@@ -381,7 +382,11 @@ async function addXp(userId, amount, message) {
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             
-            message.channel.send({ embeds: [embed] });
+            try {
+                await message.channel.send({ embeds: [embed] });
+            } catch (error) {
+                console.error('Error sending level up message:', error);
+            }
         }
 
         return userData;
