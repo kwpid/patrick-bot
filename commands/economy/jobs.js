@@ -1,5 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getAllJobs, getUserData, getUserJob, formatNumber } = require('./economyUtils');
+const { getAllJobs, getUserData, getUserJob, formatNumber } = require('../../utils/economyUtils');
+const { getJobRequirements } = require('../../utils/economyUtils');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
 const JOBS_PER_PAGE = 5;

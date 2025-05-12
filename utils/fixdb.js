@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { addMissingColumns } = require('./economyUtils');
+const { Pool } = require('pg');
+const { shopItems } = require('../data/shopItems.json');
+const { chests } = require('../data/chests.json');
 
 module.exports = {
     data: new SlashCommandBuilder()

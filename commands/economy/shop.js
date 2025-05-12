@@ -1,5 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getShopItems, updateShopItems, addItemToInventory, getUserData, updateUserData, formatNumber } = require('./economyUtils');
+const { getUserData, getUserInventory, updateUserData, getShopItems, addItemToInventory } = require('../../utils/economyUtils');
+const { shopItems } = require('../../data/shopItems.json');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
 const SHOP_EMOJI = '<:shop:1371495749124100186>';

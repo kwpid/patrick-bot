@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getUserData, getUserInventory, removeItemFromInventory, updateUserData, addItemToInventory } = require('./economyUtils');
-const chests = require('./chests.json').chests;
+const { getUserData, getUserInventory, removeItemFromInventory, updateUserData, addItemToInventory } = require('../../utils/economyUtils');
+const chests = require('../../data/chests.json').chests;
 
 module.exports = {
     name: 'open',

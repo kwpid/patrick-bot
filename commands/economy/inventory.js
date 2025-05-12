@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getUserInventory } = require('./economyUtils');
+const { getUserInventory, getUserData } = require('../../utils/economyUtils');
 
 const ITEMS_PER_PAGE = 9;
 
