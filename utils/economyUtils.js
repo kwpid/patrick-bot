@@ -488,9 +488,11 @@ async function addXp(userId, amount, message = null) {
 
         // Apply XP boost if active
         let finalAmount = amount;
+        let boostInfo = '';
         if (activeEffects.rows.length > 0) {
             const boost = activeEffects.rows[0].effect_value;
             finalAmount = Math.floor(amount * boost);
+            boostInfo = `\n*(${Math.round((boost - 1) * 100)}% XP Boost Active)*`;
         }
 
         // Get current user data
@@ -528,12 +530,38 @@ async function addXp(userId, amount, message = null) {
             [newXp, newLevel, nextLevelXp, userId]
         );
 
-        // Send level up message if applicable
+        // Send level up message and give rewards if applicable
         if (newLevel > userData.level && message) {
+            // Calculate level up rewards
+            const levelUpReward = newLevel * 100; // 100 coins per level
+            const baseChests = 1; // Base 1 chest per level
+            const bonusChests = Math.floor(newLevel / 10); // Additional chest every 10 levels
+            const chestReward = baseChests + bonusChests;
+
+            // Add coins to user's balance
+            await pool.query(
+                `UPDATE economy 
+                 SET balance = balance + $1 
+                 WHERE user_id = $2`,
+                [levelUpReward, userId]
+            );
+
+            // Add chest to inventory
+            await addItemToInventory(userId, 'basic_chest', chestReward);
+
+            // Get active boosts for display
+            const activeBoosts = await getActiveBoostInfo(userId);
+            const boostInfo = activeBoosts.length > 0 ? formatBoostInfo(activeBoosts) : '';
+
             const levelUpEmbed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('Level Up!')
-                .setDescription(`*${message.author.username} has reached level ${newLevel}!*`)
+                .setDescription(
+                    `*${message.author.username} has reached level ${newLevel}!*${boostInfo}\n\n` +
+                    `**Rewards:**\n` +
+                    `• ${levelUpReward} <:patrickcoin:1371211412940132492>\n` +
+                    `• ${chestReward} basic chest${chestReward > 1 ? 's' : ''}`
+                )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
@@ -1330,6 +1358,17 @@ async function useItem(userId, itemId) {
             return { success: false, message: "You don't have this item!" };
         }
 
+        // Check if user already has an active effect from this item
+        const existingEffect = await pool.query(
+            `SELECT * FROM active_effects 
+             WHERE user_id = $1 AND item_id = $2 AND expires_at > CURRENT_TIMESTAMP`,
+            [userId, itemId]
+        );
+
+        if (existingEffect.rows.length > 0) {
+            return { success: false, message: `You already have an active effect from ${item.name}!` };
+        }
+
         // Add active effect
         const expiresAt = new Date(Date.now() + (item.effect_duration * 1000));
         await pool.query(
@@ -1365,6 +1404,54 @@ async function useItem(userId, itemId) {
         console.error('Error using item:', error);
         return { success: false, message: "Something went wrong while using the item!" };
     }
+}
+
+// Add new function to get active boost information
+async function getActiveBoostInfo(userId) {
+    try {
+        const result = await pool.query(
+            `SELECT ae.*, s.name as item_name, s.emoji_id
+             FROM active_effects ae
+             JOIN shop s ON ae.item_id = s.item_id
+             WHERE ae.user_id = $1 
+             AND ae.expires_at > CURRENT_TIMESTAMP
+             AND (ae.effect_type = 'xp_boost' OR ae.effect_type = 'money_boost')`,
+            [userId]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting active boost info:', error);
+        return [];
+    }
+}
+
+// Add function to get money boost multiplier
+async function getMoneyBoostMultiplier(userId) {
+    try {
+        const result = await pool.query(
+            `SELECT effect_value 
+             FROM active_effects 
+             WHERE user_id = $1 
+             AND effect_type = 'money_boost' 
+             AND expires_at > CURRENT_TIMESTAMP`,
+            [userId]
+        );
+        return result.rows.length > 0 ? result.rows[0].effect_value : 1;
+    } catch (error) {
+        console.error('Error getting money boost multiplier:', error);
+        return 1;
+    }
+}
+
+// Add function to format boost information
+function formatBoostInfo(boosts) {
+    if (boosts.length === 0) return '';
+    
+    return '\n\n**Active Boosts:**\n' + boosts.map(boost => {
+        const timeLeft = Math.ceil((new Date(boost.expires_at) - Date.now()) / 1000 / 60);
+        const boostPercent = Math.round((boost.effect_value - 1) * 100);
+        return `• <:${boost.item_name.replace(/\s+/g, '')}:${boost.emoji_id}> ${boost.item_name}: +${boostPercent}% ${boost.effect_type === 'xp_boost' ? 'XP' : 'Money'} (${timeLeft}m)`;
+    }).join('\n');
 }
 
 module.exports = {
@@ -1403,5 +1490,8 @@ module.exports = {
     addActiveEffect,
     getActiveEffects,
     getUsableItems,
-    useItem
+    useItem,
+    getActiveBoostInfo,
+    getMoneyBoostMultiplier,
+    formatBoostInfo
 }; 

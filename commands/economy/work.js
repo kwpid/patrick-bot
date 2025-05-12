@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserJob, updateUserData, updateLastWorked, incrementDailyShifts, resetDailyShifts, pool, getActiveEffects, setUserJob } = require('../../utils/economyUtils');
+const { getUserData, getUserJob, updateUserData, updateLastWorked, incrementDailyShifts, resetDailyShifts, pool, getActiveEffects, setUserJob, getJobRequirements, getActiveBoostInfo, getMoneyBoostMultiplier, formatBoostInfo } = require('../../utils/economyUtils');
 const { runRandomGame } = require('../../games/workGames');
 
 module.exports = {
@@ -24,32 +24,32 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Get current shift count and minimum required
-            const shiftResult = await pool.query(`
-                SELECT j.daily_shifts, jr.min_shifts
-                FROM jobs j
-                JOIN job_requirements jr ON j.job_id = jr.job_id
-                WHERE j.user_id = $1
-            `, [message.author.id]);
+            // Check if user has worked recently
+            if (userJob.last_worked) {
+                const lastWorked = new Date(userJob.last_worked);
+                const now = new Date();
+                const timeDiff = now - lastWorked;
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
 
-            const { daily_shifts, min_shifts } = shiftResult.rows[0];
-
-            // Check cooldown
-            const lastWorked = new Date(userJob.last_worked).getTime();
-            const now = Date.now();
-            const timeLeft = lastWorked + (5 * 60 * 1000) - now;
-
-            if (timeLeft > 0) {
-                const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Work`)
-                    .setDescription(`*you need to wait ${minutesLeft} more minutes before working again!*`)
-                    .setFooter({ text: 'patrick' })
-                    .setTimestamp();
-
-                return message.reply({ embeds: [embed] });
+                if (hoursDiff < 1) {
+                    const minutesLeft = Math.ceil(60 - (hoursDiff * 60));
+                    return message.reply(`*you can work again in ${minutesLeft} minutes!*`);
+                }
             }
+
+            // Get job requirements
+            const jobReq = await getJobRequirements(userJob.job_id);
+            if (!jobReq) {
+                return message.reply("*something went wrong, try again later!*");
+            }
+
+            // Get money boost if any
+            const moneyBoost = await getMoneyBoostMultiplier(message.author.id);
+            const baseSalary = jobReq.salary;
+            const finalSalary = Math.floor(baseSalary * moneyBoost);
+
+            // Get active boosts for display
+            const activeBoosts = await getActiveBoostInfo(message.author.id);
 
             // Check for active beer effect
             const activeEffects = await getActiveEffects(message.author.id);
@@ -80,7 +80,7 @@ module.exports = {
 
             if (gameResult.success) {
                 // Calculate salary with beer boost if applicable
-                let salary = userJob.salary;
+                let salary = finalSalary;
                 salary = Math.floor(salary * 1.05); // +5% more money for every work shift
 
                 // Update user balance with salary
@@ -113,6 +113,11 @@ module.exports = {
                 }
                 if (!gotFired) {
                     description += `⚠️ *remember: you need to complete ${newMinShifts} shifts per day to keep your job!*`;
+                }
+
+                // Add active boosts if any
+                if (activeBoosts.length > 0) {
+                    description += formatBoostInfo(activeBoosts);
                 }
 
                 const embed = new EmbedBuilder()
