@@ -279,7 +279,7 @@ async function initializeDatabase() {
 async function addMissingColumns() {
     try {
         // Check if discount column exists in shop table
-        const columnCheck = await pool.query(`
+        const shopColumnCheck = await pool.query(`
             SELECT column_name 
             FROM information_schema.columns 
             WHERE table_name = 'shop' 
@@ -287,12 +287,79 @@ async function addMissingColumns() {
         `);
 
         // If discount column doesn't exist, add it
-        if (columnCheck.rows.length === 0) {
+        if (shopColumnCheck.rows.length === 0) {
             await pool.query(`
                 ALTER TABLE shop 
                 ADD COLUMN discount DECIMAL(3,2) DEFAULT 0
             `);
             console.log('Added discount column to shop table');
+        }
+
+        // Check if daily_shifts column exists in jobs table
+        const jobsColumnCheck = await pool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'jobs' 
+            AND column_name IN ('daily_shifts', 'last_shift_reset')
+        `);
+
+        const existingColumns = jobsColumnCheck.rows.map(row => row.column_name);
+
+        // Add daily_shifts if it doesn't exist
+        if (!existingColumns.includes('daily_shifts')) {
+            await pool.query(`
+                ALTER TABLE jobs 
+                ADD COLUMN daily_shifts INTEGER DEFAULT 0
+            `);
+            console.log('Added daily_shifts column to jobs table');
+        }
+
+        // Add last_shift_reset if it doesn't exist
+        if (!existingColumns.includes('last_shift_reset')) {
+            await pool.query(`
+                ALTER TABLE jobs 
+                ADD COLUMN last_shift_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            `);
+            console.log('Added last_shift_reset column to jobs table');
+        }
+
+        // Check if min_shifts column exists in job_requirements table
+        const jobReqColumnCheck = await pool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'job_requirements' 
+            AND column_name = 'min_shifts'
+        `);
+
+        // Add min_shifts if it doesn't exist
+        if (jobReqColumnCheck.rows.length === 0) {
+            await pool.query(`
+                ALTER TABLE job_requirements 
+                ADD COLUMN min_shifts INTEGER NOT NULL DEFAULT 3
+            `);
+            console.log('Added min_shifts column to job_requirements table');
+
+            // Update existing jobs with default min_shifts values
+            const jobs = [
+                ['lemonade_booth', 2],
+                ['chum_janitor', 3],
+                ['shake_server', 3],
+                ['boating_assistant', 4],
+                ['jelly_harvester', 4],
+                ['goo_lifeguard', 4],
+                ['lab_assistant', 5],
+                ['tour_guide', 5],
+                ['krab_manager', 6],
+                ['krab_owner', 6]
+            ];
+
+            for (const [jobId, minShifts] of jobs) {
+                await pool.query(
+                    'UPDATE job_requirements SET min_shifts = $1 WHERE job_id = $2',
+                    [minShifts, jobId]
+                );
+            }
+            console.log('Updated existing jobs with min_shifts values');
         }
 
         return true;
