@@ -58,13 +58,19 @@
         {
             "id": "beer",
             "name": "Mug of Beer",
-            "description": "Drink responsibly!!",
+            "description": "Drink responsibly!! Grants +50% money from work shifts, but has a 25% chance of getting you fired and losing money.",
             "price": 350,
             "emoji_id": "1368096669216018432",
-            "tags": ["Collectible"],
+            "tags": ["Collectible", "Usable"],
             "value": 300,
-            "type": "item",
-            "on_sale": true
+            "type": "usable",
+            "on_sale": true,
+            "effect": {
+                "type": "money_boost",
+                "value": 1.5,
+                "duration": 1800,
+                "firing_chance": 0.25
+            }
         },
         {
             "id": "computer",
@@ -111,26 +117,20 @@
             "on_sale": true
         },
         {
-            "id": "devilpitchfork",
-            "name": "Devils Pitchfork",
-            "description": "A high valued pitchfork from the devil himself",
-            "price": 666666,
-            "emoji_id": "1371492762427330662",
-            "tags": ["Collectible"],
-            "value": 666666,
-            "type": "item",
-            "on_sale": true
-        },
-        {
             "id": "kelp_shake",
             "name": "Kelp Shake",
-            "description": "A shake made from kelp, it's good for you!",
+            "description": "A shake made from kelp, it's good for you! Grants +10% XP boost for 10 minutes.",
             "price": 150,
             "emoji_id": "1371493471201919126",
-            "tags": ["Collectible"],
+            "tags": ["Collectible", "Usable"],
             "value": 100,
-            "type": "item",
-            "on_sale": true
+            "type": "usable",
+            "on_sale": true,
+            "effect": {
+                "type": "xp_boost",
+                "value": 1.1,
+                "duration": 600
+            }
         },
         {
             "id": "toolbox",

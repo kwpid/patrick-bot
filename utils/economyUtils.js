@@ -54,6 +54,9 @@ async function recreateShopTable() {
                 type TEXT NOT NULL,
                 on_sale BOOLEAN DEFAULT true,
                 discount DECIMAL(3,2) DEFAULT 0,
+                effect_type TEXT,
+                effect_value DECIMAL(4,2),
+                effect_duration INTEGER,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -80,8 +83,9 @@ async function initializeShopItems() {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
-                    tags, value, type, on_sale, discount
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    tags, value, type, on_sale, discount,
+                    effect_type, effect_value, effect_duration
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 ON CONFLICT (item_id) DO NOTHING`,
                 [
                     item.id,
@@ -93,7 +97,10 @@ async function initializeShopItems() {
                     item.value,
                     item.type,
                     item.on_sale || true,
-                    0
+                    0,
+                    item.effect?.type || null,
+                    item.effect?.value || null,
+                    item.effect?.duration || null
                 ]
             );
         }
@@ -176,6 +183,9 @@ async function initializeDatabase() {
                 type TEXT NOT NULL,
                 on_sale BOOLEAN DEFAULT true,
                 discount DECIMAL(3,2) DEFAULT 0,
+                effect_type TEXT,
+                effect_value DECIMAL(4,2),
+                effect_duration INTEGER,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -268,6 +278,9 @@ async function initializeDatabase() {
             CREATE INDEX IF NOT EXISTS inventory_user_id_idx ON inventory(user_id);
             CREATE INDEX IF NOT EXISTS inventory_item_id_idx ON inventory(item_id);
         `);
+
+        // Create active effects table
+        await createActiveEffectsTable();
 
         console.log('Database tables initialized successfully');
     } catch (error) {
@@ -478,84 +491,79 @@ function calculateNextLevelXp(currentLevel) {
 }
 
 // Add XP to user and handle level up
-async function addXp(userId, amount, message) {
+async function addXp(userId, amount, message = null) {
     try {
-        const userData = await getUserData(userId);
-        if (!userData) return null;
+        // Get active XP boost if any
+        const activeEffects = await pool.query(
+            `SELECT effect_value 
+             FROM active_effects 
+             WHERE user_id = $1 
+             AND effect_type = 'xp_boost' 
+             AND expires_at > CURRENT_TIMESTAMP`,
+            [userId]
+        );
 
-        const oldLevel = userData.level;
-        userData.xp += amount;
+        // Apply XP boost if active
+        let finalAmount = amount;
+        if (activeEffects.rows.length > 0) {
+            const boost = activeEffects.rows[0].effect_value;
+            finalAmount = Math.floor(amount * boost);
+        }
+
+        // Get current user data
+        const result = await pool.query(
+            'SELECT * FROM economy WHERE user_id = $1',
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            // Create new user entry
+            await pool.query(
+                `INSERT INTO economy (user_id, xp, next_level_xp)
+                 VALUES ($1, $2, $3)`,
+                [userId, finalAmount, 100]
+            );
+            return;
+        }
+
+        const userData = result.rows[0];
+        const newXp = userData.xp + finalAmount;
+        let newLevel = userData.level;
+        let nextLevelXp = userData.next_level_xp;
 
         // Check for level up
-        while (userData.xp >= userData.nextLevelXp) {
-            const overflowXp = userData.xp - userData.nextLevelXp;
-            userData.level += 1;
-            userData.nextLevelXp = calculateNextLevelXp(userData.level);
-            userData.xp = overflowXp;
-            
-            // Add coins for level up - reward is 100 * level
-            const levelReward = userData.level * 100;
-            userData.balance += levelReward;
-
-            // Give chest every level
-            let chestId;
-            if (userData.level <= 5) {
-                chestId = 'chest_1'; // Basic chest for levels 1-5
-            } else if (userData.level <= 10) {
-                chestId = 'chest_2'; // Rare chest for levels 6-10
-            } else {
-                chestId = 'chest_3'; // Epic chest for levels 11+
-            }
-
-            // Add chest to inventory
-            const chestAdded = await addItemToInventory(userId, chestId);
-            if (!chestAdded) {
-                console.error(`Failed to add chest ${chestId} to inventory for user ${userId}`);
-            }
+        while (newXp >= nextLevelXp) {
+            newLevel++;
+            nextLevelXp = Math.floor(nextLevelXp * 1.5); // Increase XP needed for next level
         }
 
-        await updateUserData(userId, userData);
+        // Update user data
+        await pool.query(
+            `UPDATE economy 
+             SET xp = $1, level = $2, next_level_xp = $3, updated_at = CURRENT_TIMESTAMP
+             WHERE user_id = $4`,
+            [newXp, newLevel, nextLevelXp, userId]
+        );
 
-        // Send level up message if leveled up
-        if (userData.level > oldLevel) {
-            let description = `*${message.author.username} has reached level ${userData.level}!*\n` +
-                            `*you earned ${formatNumber(userData.level * 100)} <:patrickcoin:1371211412940132492>!*`;
-
-            // Add chest message
-            let chestId;
-            if (userData.level <= 5) {
-                chestId = 'chest_1';
-            } else if (userData.level <= 10) {
-                chestId = 'chest_2';
-            } else {
-                chestId = 'chest_3';
-            }
-
-            // Get chest name from database
-            const chestResult = await pool.query(
-                'SELECT name FROM chests WHERE chest_id = $1',
-                [chestId]
-            );
-
-            if (chestResult.rows.length > 0) {
-                description += `\n*you received a ${chestResult.rows[0].name}!*`;
-            }
-
-            const embed = new EmbedBuilder()
+        // Send level up message if applicable
+        if (newLevel > userData.level && message) {
+            const levelUpEmbed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('Level Up!')
-                .setDescription(description)
+                .setDescription(`*${message.author.username} has reached level ${newLevel}!*`)
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
-            
-            try {
-                await message.channel.send({ embeds: [embed] });
-            } catch (error) {
-                console.error('Error sending level up message:', error);
-            }
+
+            message.channel.send({ embeds: [levelUpEmbed] }).catch(() => {});
         }
 
-        return userData;
+        return {
+            xp: newXp,
+            level: newLevel,
+            nextLevelXp: nextLevelXp,
+            xpGained: finalAmount,
+            boosted: activeEffects.rows.length > 0
+        };
     } catch (error) {
         console.error('Error adding XP:', error);
         return null;
@@ -1022,6 +1030,9 @@ async function recreateAllTables() {
                 type TEXT NOT NULL,
                 on_sale BOOLEAN DEFAULT true,
                 discount DECIMAL(3,2) DEFAULT 0,
+                effect_type TEXT,
+                effect_value DECIMAL(4,2),
+                effect_duration INTEGER,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -1075,8 +1086,9 @@ async function recreateAllTables() {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
-                    tags, value, type, on_sale, discount
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    tags, value, type, on_sale, discount,
+                    effect_type, effect_value, effect_duration
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 ON CONFLICT (item_id) DO NOTHING`,
                 [
                     item.id,
@@ -1088,7 +1100,10 @@ async function recreateAllTables() {
                     item.value,
                     item.type,
                     item.on_sale || true,
-                    0
+                    0,
+                    item.effect?.type || null,
+                    item.effect?.value || null,
+                    item.effect?.duration || null
                 ]
             );
         }
@@ -1218,6 +1233,152 @@ async function resetDailyShifts() {
     }
 }
 
+// Create active effects table
+async function createActiveEffectsTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS active_effects (
+                user_id TEXT,
+                item_id TEXT,
+                effect_type TEXT NOT NULL,
+                effect_value DECIMAL(5,2) NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, item_id),
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
+            )
+        `);
+        console.log('Active effects table created successfully');
+        return true;
+    } catch (error) {
+        console.error('Error creating active effects table:', error);
+        return false;
+    }
+}
+
+// Add active effect
+async function addActiveEffect(userId, itemId, effectType, effectValue, durationMinutes) {
+    try {
+        const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
+        await pool.query(
+            `INSERT INTO active_effects (user_id, item_id, effect_type, effect_value, expires_at)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (user_id, item_id) 
+             DO UPDATE SET 
+                effect_type = EXCLUDED.effect_type,
+                effect_value = EXCLUDED.effect_value,
+                expires_at = EXCLUDED.expires_at,
+                created_at = CURRENT_TIMESTAMP`,
+            [userId, itemId, effectType, effectValue, expiresAt]
+        );
+        return true;
+    } catch (error) {
+        console.error('Error adding active effect:', error);
+        return false;
+    }
+}
+
+// Get active effects for user
+async function getActiveEffects(userId) {
+    try {
+        // First, clean up expired effects
+        await pool.query(
+            'DELETE FROM active_effects WHERE expires_at < CURRENT_TIMESTAMP'
+        );
+
+        // Then get active effects
+        const result = await pool.query(
+            `SELECT ae.*, s.name as item_name, s.emoji_id
+             FROM active_effects ae
+             JOIN shop s ON ae.item_id = s.item_id
+             WHERE ae.user_id = $1
+             ORDER BY ae.expires_at ASC`,
+            [userId]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting active effects:', error);
+        return [];
+    }
+}
+
+// Get usable items from inventory
+async function getUsableItems(userId) {
+    try {
+        const result = await pool.query(
+            `SELECT i.item_id, i.quantity, s.name, s.description, s.emoji_id, 
+                    s.effect_type, s.effect_value, s.effect_duration
+             FROM inventory i
+             JOIN shop s ON i.item_id = s.item_id
+             WHERE i.user_id = $1 AND s.type = 'usable'
+             ORDER BY s.name`,
+            [userId]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting usable items:', error);
+        return [];
+    }
+}
+
+// Use an item
+async function useItem(userId, itemId) {
+    try {
+        // Get item details from shop
+        const itemResult = await pool.query(
+            `SELECT * FROM shop WHERE item_id = $1 AND type = 'usable'`,
+            [itemId]
+        );
+
+        if (itemResult.rows.length === 0) {
+            return { success: false, message: "This item cannot be used!" };
+        }
+
+        const item = itemResult.rows[0];
+
+        // Check if user has the item
+        const inventoryResult = await pool.query(
+            `SELECT quantity FROM inventory 
+             WHERE user_id = $1 AND item_id = $2`,
+            [userId, itemId]
+        );
+
+        if (inventoryResult.rows.length === 0 || inventoryResult.rows[0].quantity <= 0) {
+            return { success: false, message: "You don't have this item!" };
+        }
+
+        // Add active effect
+        const expiresAt = new Date(Date.now() + (item.effect_duration * 1000));
+        await pool.query(
+            `INSERT INTO active_effects (
+                user_id, item_id, effect_type, effect_value, expires_at
+            ) VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (user_id, item_id) 
+            DO UPDATE SET 
+                effect_value = EXCLUDED.effect_value,
+                expires_at = EXCLUDED.expires_at,
+                created_at = CURRENT_TIMESTAMP`,
+            [userId, itemId, item.effect_type, item.effect_value, expiresAt]
+        );
+
+        // Remove one item from inventory
+        await removeItemFromInventory(userId, itemId, 1);
+
+        return { 
+            success: true, 
+            message: `Used ${item.name}! Effect: +${Math.round((item.effect_value - 1) * 100)}% XP for ${item.effect_duration / 60} minutes.`,
+            effect: {
+                type: item.effect_type,
+                value: item.effect_value,
+                duration: item.effect_duration
+            }
+        };
+    } catch (error) {
+        console.error('Error using item:', error);
+        return { success: false, message: "Something went wrong while using the item!" };
+    }
+}
+
 module.exports = {
     pool,
     testConnection,
@@ -1249,5 +1410,10 @@ module.exports = {
     getLastQuitTime,
     setLastQuitTime,
     incrementDailyShifts,
-    resetDailyShifts
+    resetDailyShifts,
+    createActiveEffectsTable,
+    addActiveEffect,
+    getActiveEffects,
+    getUsableItems,
+    useItem
 }; 
