@@ -170,25 +170,8 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create shop table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS shop (
-                item_id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                price INTEGER NOT NULL,
-                emoji_id TEXT NOT NULL,
-                tags TEXT[] NOT NULL,
-                value INTEGER NOT NULL,
-                type TEXT NOT NULL,
-                on_sale BOOLEAN DEFAULT true,
-                discount DECIMAL(3,2) DEFAULT 0,
-                effect_type TEXT,
-                effect_value DECIMAL(4,2),
-                effect_duration INTEGER,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+        // Recreate shop table with new schema
+        await recreateShopTable();
 
         // Create chests table
         await pool.query(`

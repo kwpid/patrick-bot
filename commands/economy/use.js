@@ -11,7 +11,7 @@ module.exports = {
             if (usableItems.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Items`)
+                    .setTitle(`${message.author.username}'s items`)
                     .setDescription("*you don't have any usable items in your inventory!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -25,10 +25,10 @@ module.exports = {
                 .setPlaceholder('Select an item to use')
                 .addOptions(
                     usableItems.map(item => ({
-                        label: item.name,
+                        label: item.name || 'Unknown Item',
                         description: item.description,
                         value: item.item_id,
-                        emoji: item.emoji_id
+                        emoji: item.emoji_id ? { id: item.emoji_id } : undefined
                     }))
                 );
 
@@ -39,7 +39,7 @@ module.exports = {
                 .setTitle(`${message.author.username}'s Usable Items`)
                 .setDescription(
                     usableItems.map(item => 
-                        `${item.emoji_id} **${item.name}** (${item.quantity}x)\n${item.description}`
+                        `<:${item.emoji_id}> **${item.name}** (${item.quantity}x)\n${item.description}`
                     ).join('\n\n')
                 )
                 .setFooter({ text: 'patrick' })
@@ -68,15 +68,19 @@ module.exports = {
                             const boostPercent = Math.round((effect.value - 1) * 100);
                             effectDescription = `+${boostPercent}% XP for ${effect.duration} minutes`;
                             break;
+                        case 'money_boost':
+                            const moneyBoostPercent = Math.round((effect.value - 1) * 100);
+                            effectDescription = `+${moneyBoostPercent}% Money for jobs for ${effect.duration} minutes, but 25% chance of getting fired and losing money`;
+                            break;
                         default:
                             effectDescription = 'Unknown effect';
                     }
 
                     const successEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Item Use`)
+                        .setTitle(`${message.author.username}'s item use`)
                         .setDescription(
-                            `*you used a ${result.item.name}!*\n` +
+                            `*you used a ${result.item ? result.item.name : 'Unknown Item'}!*\n` +
                             `*effect: ${effectDescription}*`
                         )
                         .setFooter({ text: 'patrick' })
@@ -89,7 +93,7 @@ module.exports = {
                 } else {
                     const errorEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Item Use`)
+                        .setTitle(`${message.author.username}'s item use`)
                         .setDescription(`*${result.error}*`)
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();
