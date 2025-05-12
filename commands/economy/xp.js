@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, generateProgressBar, formatNumber } = require('./economyUtils');
+const { getUserData, generateProgressBar, formatNumber } = require('../../utils/economyUtils');
 
 module.exports = {
     name: 'xp',
