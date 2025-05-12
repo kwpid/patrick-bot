@@ -1354,6 +1354,11 @@ async function useItem(userId, itemId) {
                 type: item.effect_type,
                 value: item.effect_value,
                 duration: item.effect_duration
+            },
+            item: {
+                name: item.name,
+                id: item.item_id,
+                emoji_id: item.emoji_id
             }
         };
     } catch (error) {

@@ -31,6 +31,10 @@ module.exports = {
                                 const boostPercent = Math.round((effect.effect_value - 1) * 100);
                                 effectDescription = `+${boostPercent}% XP Boost`;
                                 break;
+                            case 'money_boost':
+                                const moneyBoostPercent = Math.round((effect.effect_value - 1) * 100);
+                                effectDescription = `+${moneyBoostPercent}% Money Boost`;
+                                break;
                             default:
                                 effectDescription = 'Unknown effect';
                         }
