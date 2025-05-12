@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserJob, updateUserData, getJobRequirements } = require('../../utils/economyUtils');
+const { getUserData, getUserJob, updateUserData, getJobRequirements, setUserJob } = require('../../utils/economyUtils');
 
 module.exports = {
     name: 'apply',
@@ -49,7 +49,7 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            const success = await updateUserData(message.author.id, { job: jobId });
+            const success = await setUserJob(message.author.id, jobId);
 
             if (success) {
                 const embed = new EmbedBuilder()

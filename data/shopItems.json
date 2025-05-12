@@ -58,18 +58,16 @@
         {
             "id": "beer",
             "name": "Mug of Beer",
-            "description": "+50% money from work shifts, but has a 25% chance of getting you fired and losing money",
-            "price": 5000,
-            "emoji_id": "1368096669216018432",
-            "tags": ["Collectible", "Usable"],
-            "value": 3750,
+            "description": "A refreshing mug of beer. Gives a flat +5% more money for every work shift.",
+            "price": 100,
+            "emoji_id": "1371211412940132492",
+            "tags": ["drink", "alcohol"],
+            "value": 50,
             "type": "usable",
-            "on_sale": true,
             "effect": {
                 "type": "money_boost",
-                "value": 1.5,
-                "duration": 1800,
-                "firing_chance": 0.25
+                "value": 1.05,
+                "duration": 3600
             }
         },
         {
