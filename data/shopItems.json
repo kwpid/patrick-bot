@@ -144,6 +144,17 @@
             "on_sale": true
         },
         {
+            "id": "spatula",
+            "name": "Spatula",
+            "description": "A spatula used in the Krusty Krab",
+            "price": 50,
+            "emoji_id": "1371508267976491028",
+            "tags": ["Collectible"],
+            "value": 40,
+            "type": "item",
+            "on_sale": true
+        },
+        {
             "id": "chest_1",
             "name": "Basic Chest",
             "description": "A basic chest that might contain some goodies!",

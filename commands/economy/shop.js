@@ -20,7 +20,18 @@ module.exports = {
         try {
             // Check if user is admin and wants to refresh shop
             if (message.content.toLowerCase().includes('refresh')) {
-                if (!message.member.permissions.has('Administrator')) {
+                // Check if command is used in a guild
+                if (!message.guild) {
+                    return message.reply("*this command can only be used in a server!*");
+                }
+
+                // Get member with permissions
+                const member = message.member || await message.guild.members.fetch(message.author.id);
+                if (!member) {
+                    return message.reply("*couldn't fetch your member data!*");
+                }
+
+                if (!member.permissions.has('Administrator')) {
                     return message.reply("*only administrators can refresh the shop!*");
                 }
 
@@ -47,7 +58,9 @@ module.exports = {
                 .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
                 .setDescription(
                     shopItems.map(item => {
-                        let itemDisplay = `<:${item.id}:${item.emoji_id}> **${item.name}**\n`;
+                        // Special case for Devil's Pitchfork
+                        const emojiName = item.id === 'devilpitchfork' ? 'devils_pitchfork' : item.id;
+                        let itemDisplay = `<:${emojiName}:${item.emoji_id}> **${item.name}**\n`;
                         itemDisplay += `├ Price: ${formatNumber(item.price)} ${PATRICK_COIN}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
