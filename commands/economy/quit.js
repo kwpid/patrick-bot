@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserJob, setUserJob, getLastQuitTime, setLastQuitTime } = require('./economyUtils');
+const { getUserJob, setUserJob, getLastQuitTime, setLastQuitTime } = require('../../utils/economyUtils');
 
 const COOLDOWN_TIME = 60 * 60 * 1000; // 1 hour in ms
 

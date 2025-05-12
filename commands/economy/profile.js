@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserJob, generateProgressBar, formatNumber } = require('./economyUtils');
+const { getUserData, getUserInventory, getUserJob, getJobRequirements, generateProgressBar, formatNumber } = require('../../utils/economyUtils');
 
 module.exports = {
     name: 'profile',

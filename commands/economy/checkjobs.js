@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { pool } = require('./economyUtils');
+const { getUserJob, getJobRequirements } = require('../../utils/economyUtils');
 
 module.exports = {
     name: 'checkjobs',
@@ -12,7 +12,7 @@ module.exports = {
             }
 
             // Get all jobs from the table
-            const result = await pool.query('SELECT * FROM job_requirements');
+            const result = await getJobRequirements();
             
             const embed = new EmbedBuilder()
                 .setColor('#292929')

@@ -1,5 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const { getUserData, getUserInventory, removeItemFromInventory, updateUserData } = require('./economyUtils');
+const { getUserData, getUserInventory, removeItemFromInventory, updateUserData } = require('../../utils/economyUtils');
+const { shopItems } = require('../../data/shopItems.json');
 
 module.exports = {
     name: 'sell',

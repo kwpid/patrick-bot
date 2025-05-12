@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, updateUserData } = require('./economyUtils');
+const { getUserData, getUserJob, updateUserData, getJobRequirements } = require('../../utils/economyUtils');
 
 // Cooldown map to track user cooldowns
 const cooldowns = new Map();
