@@ -34,18 +34,6 @@ module.exports = {
 
             const { daily_shifts, min_shifts } = shiftResult.rows[0];
 
-            // Check if user has reached their maximum shifts
-            if (daily_shifts >= min_shifts) {
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Work`)
-                    .setDescription(`*you've already completed your ${min_shifts} shifts for today! come back tomorrow!*`)
-                    .setFooter({ text: 'patrick' })
-                    .setTimestamp();
-
-                return message.reply({ embeds: [embed] });
-            }
-
             // Check cooldown
             const lastWorked = new Date(userJob.last_worked).getTime();
             const now = Date.now();
@@ -97,8 +85,8 @@ module.exports = {
                     .setDescription(
                         `${gameResult.message}\n` +
                         `*you earned ${salary} <:patrickcoin:1371211412940132492>!*\n\n` +
-                        `*shifts today: ${newDailyShifts}/${newMinShifts}*\n` +
-                        `*remaining shifts: ${remainingShifts}*\n` +
+                        `*shifts today: ${newDailyShifts} (minimum required: ${newMinShifts})*\n` +
+                        (remainingShifts > 0 ? `*remaining minimum shifts: ${remainingShifts}*\n` : '') +
                         `⚠️ *remember: you need to complete ${newMinShifts} shifts per day to keep your job!*`
                     )
                     .setFooter({ text: 'patrick' })
