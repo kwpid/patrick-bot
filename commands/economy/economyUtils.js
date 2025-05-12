@@ -134,8 +134,7 @@ async function initializeDatabase() {
                 item_id TEXT,
                 quantity INTEGER DEFAULT 1,
                 PRIMARY KEY (user_id, item_id),
-                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
-                FOREIGN KEY (item_id) REFERENCES shop(item_id)
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
             )
         `);
 
@@ -155,6 +154,59 @@ async function initializeDatabase() {
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        // Create chests table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS chests (
+                chest_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                emoji_id TEXT NOT NULL
+            )
+        `);
+
+        // Initialize chests if empty
+        const chestCheck = await pool.query('SELECT COUNT(*) FROM chests');
+        if (chestCheck.rows[0].count === '0') {
+            const chests = require('./chests.json').chests;
+            for (const [chestId, chestData] of Object.entries(chests)) {
+                await pool.query(
+                    `INSERT INTO chests (chest_id, name, description, emoji_id)
+                     VALUES ($1, $2, $3, $4)
+                     ON CONFLICT (chest_id) DO NOTHING`,
+                    [
+                        chestId,
+                        chestData.name,
+                        chestData.description,
+                        "1371269782808039524" // Default chest emoji
+                    ]
+                );
+            }
+        }
+
+        // Initialize shop items
+        const shopItems = require('./shopItems.json').items;
+        for (const item of shopItems) {
+            await pool.query(
+                `INSERT INTO shop (
+                    item_id, name, description, price, emoji_id, 
+                    tags, value, type, on_sale, discount
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (item_id) DO NOTHING`,
+                [
+                    item.id,
+                    item.name,
+                    item.description,
+                    item.price,
+                    item.emoji_id,
+                    item.tags,
+                    item.value,
+                    item.type,
+                    item.on_sale,
+                    0
+                ]
+            );
+        }
 
         // Create jobs table
         await pool.query(`
@@ -177,12 +229,6 @@ async function initializeDatabase() {
                 salary INTEGER NOT NULL
             )
         `);
-
-        // Initialize shop items only if the shop is empty
-        const shopItems = await getShopItems();
-        if (!shopItems || shopItems.length === 0) {
-            await initializeShopItems();
-        }
 
         // Initialize job requirements if empty
         const jobCheck = await pool.query('SELECT COUNT(*) FROM job_requirements');
@@ -331,6 +377,8 @@ function calculateNextLevelXp(currentLevel) {
 async function addXp(userId, amount, message) {
     try {
         const userData = await getUserData(userId);
+        if (!userData) return null;
+
         const oldLevel = userData.level;
         userData.xp += amount;
 
@@ -354,7 +402,12 @@ async function addXp(userId, amount, message) {
             } else {
                 chestId = 'chest_3'; // Epic chest for levels 11+
             }
-            await addItemToInventory(userId, chestId);
+
+            // Add chest to inventory
+            const chestAdded = await addItemToInventory(userId, chestId);
+            if (!chestAdded) {
+                console.error(`Failed to add chest ${chestId} to inventory for user ${userId}`);
+            }
         }
 
         await updateUserData(userId, userData);
@@ -373,7 +426,16 @@ async function addXp(userId, amount, message) {
             } else {
                 chestId = 'chest_3';
             }
-            description += `\n*you received a ${chests.chests[chestId].name}!*`;
+
+            // Get chest name from database
+            const chestResult = await pool.query(
+                'SELECT name FROM chests WHERE chest_id = $1',
+                [chestId]
+            );
+
+            if (chestResult.rows.length > 0) {
+                description += `\n*you received a ${chestResult.rows[0].name}!*`;
+            }
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
@@ -470,18 +532,36 @@ async function getUserInventory(userId) {
 
 async function addItemToInventory(userId, itemId, quantity = 1) {
     try {
-        // First check if the item exists in the shop
+        // Check if it's a chest
+        const chestCheck = await pool.query(
+            'SELECT chest_id FROM chests WHERE chest_id = $1',
+            [itemId]
+        );
+
+        if (chestCheck.rows.length > 0) {
+            // It's a chest, add directly to inventory
+            await pool.query(
+                `INSERT INTO inventory (user_id, item_id, quantity)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (user_id, item_id)
+                 DO UPDATE SET quantity = inventory.quantity + $3`,
+                [userId, itemId, quantity]
+            );
+            return true;
+        }
+
+        // Check if it's a shop item
         const itemCheck = await pool.query(
             'SELECT item_id FROM shop WHERE item_id = $1',
             [itemId]
         );
 
         if (itemCheck.rows.length === 0) {
-            console.error('Item not found in shop:', itemId);
+            console.error('Item not found in shop or chests:', itemId);
             return false;
         }
 
-        // Then add to inventory
+        // Add to inventory
         await pool.query(
             `INSERT INTO inventory (user_id, item_id, quantity)
              VALUES ($1, $2, $3)
@@ -795,8 +875,7 @@ async function recreateAllTables() {
                 item_id TEXT,
                 quantity INTEGER DEFAULT 1,
                 PRIMARY KEY (user_id, item_id),
-                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
-                FOREIGN KEY (item_id) REFERENCES shop(item_id)
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
             )
         `);
 
