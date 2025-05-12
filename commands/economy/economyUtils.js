@@ -73,6 +73,7 @@ async function recreateShopTable() {
 async function initializeShopItems() {
     try {
         const shopItems = require('./shopItems.json').items;
+        const chests = require('./chests.json').chests;
         
         // Insert all items into shop table
         for (const item of shopItems) {
@@ -96,6 +97,30 @@ async function initializeShopItems() {
                 ]
             );
         }
+
+        // Add chests to shop table
+        for (const [chestId, chestData] of Object.entries(chests)) {
+            await pool.query(
+                `INSERT INTO shop (
+                    item_id, name, description, price, emoji_id, 
+                    tags, value, type, on_sale, discount
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (item_id) DO NOTHING`,
+                [
+                    chestId,
+                    chestData.name,
+                    chestData.description,
+                    1000, // Default price for chests
+                    "1371269782808039524", // Default chest emoji
+                    ["chest", "basic"],
+                    500, // Default value
+                    "chest",
+                    false, // Chests are not for sale
+                    0
+                ]
+            );
+        }
+        
         console.log('Shop items initialized successfully');
         return true;
     } catch (error) {
@@ -996,6 +1021,17 @@ async function recreateAllTables() {
     }
 }
 
+const quitCooldowns = new Map(); // Temporary in-memory storage; use a database in production
+
+function getLastQuitTime(userId) {
+    return quitCooldowns.get(userId) || null;
+}
+
+function setLastQuitTime(userId, timestamp) {
+    quitCooldowns.set(userId, timestamp);
+}
+
+
 module.exports = {
     getUserData,
     updateUserData,
@@ -1019,4 +1055,5 @@ module.exports = {
     formatNumber,
     recreateAllTables,
     addMissingColumns
-}; 
+};
+
