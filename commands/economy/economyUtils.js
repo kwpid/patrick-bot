@@ -1137,5 +1137,7 @@ module.exports = {
     recreateAllTables,
     addMissingColumns,
     incrementDailyShifts,
-    resetDailyShifts
+    resetDailyShifts,
+    getLastQuitTime,
+    setLastQuitTime
 }; 
