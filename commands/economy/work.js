@@ -97,7 +97,7 @@ module.exports = {
                     WHERE j.user_id = $1
                 `, [message.author.id]);
 
-                const { daily_shifts: newDailyShifts, min_shifts: newMinShifts } = updatedShiftResult.rows[0];
+                const { daily_shifts: newDailyShifts, min_shifts: newMinShifts } = updatedShiftResult.rows[0] || { daily_shifts: 0, min_shifts: 0 };
                 const remainingShifts = Math.max(0, newMinShifts - newDailyShifts);
 
                 let description = `${gameResult.message}\n`;
