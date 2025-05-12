@@ -39,7 +39,8 @@ module.exports = {
             }
 
             const amount = Math.floor(Math.random() * 401) + 100; // Random amount between 100-500
-            const newBalance = userData.balance + amount;
+            const boostedAmount = Math.floor(amount * 1.05); // +5% more money for every paycheck
+            const newBalance = userData.balance + boostedAmount;
             await updateUserData(userId, { balance: newBalance });
 
             // Set cooldown

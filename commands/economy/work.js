@@ -81,9 +81,7 @@ module.exports = {
             if (gameResult.success) {
                 // Calculate salary with beer boost if applicable
                 let salary = userJob.salary;
-                if (beerEffect && !gotFired) {
-                    salary = Math.floor(salary * beerEffect.effect_value);
-                }
+                salary = Math.floor(salary * 1.05); // +5% more money for every work shift
 
                 // Update user balance with salary
                 userData.balance += salary;
@@ -107,9 +105,6 @@ module.exports = {
                     description += `*you lost ${moneyLost} <:patrickcoin:1371211412940132492>!*\n`;
                 } else {
                     description += `*you earned ${salary} <:patrickcoin:1371211412940132492>!*\n`;
-                    if (beerEffect) {
-                        description += `*beer boost active: +${Math.round((beerEffect.effect_value - 1) * 100)}% money!*\n`;
-                    }
                 }
 
                 description += `\n*shifts today: ${newDailyShifts} (minimum required: ${newMinShifts})*\n`;
