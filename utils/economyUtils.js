@@ -734,20 +734,23 @@ async function updateShopItems() {
             .sort(() => Math.random() - 0.5)
             .slice(0, numItems);
         
-        // Update all items to not be on sale first
+        // First, set all items to not be on sale
         await pool.query('UPDATE shop SET on_sale = false');
         
-        // Insert or update selected items
+        // Then, delete any existing items that are in the selected items
+        const selectedItemIds = selectedItems.map(item => item.id);
+        await pool.query(
+            'DELETE FROM shop WHERE item_id = ANY($1)',
+            [selectedItemIds]
+        );
+        
+        // Finally, insert the new selected items
         for (const item of selectedItems) {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
                     tags, value, type, on_sale
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                ON CONFLICT (item_id) 
-                DO UPDATE SET 
-                    on_sale = $9,
-                    last_updated = CURRENT_TIMESTAMP`,
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
                 [
                     item.id,
                     item.name,
