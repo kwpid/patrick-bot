@@ -68,13 +68,17 @@ module.exports = {
                             const boostPercent = Math.round((effect.value - 1) * 100);
                             effectDescription = `+${boostPercent}% XP for ${effect.duration} minutes`;
                             break;
+                        case 'money_boost':
+                            const moneyBoostPercent = Math.round((effect.value - 1) * 100);
+                            effectDescription = `+${moneyBoostPercent}% Money for jobs for ${effect.duration} minutes, but 25% chance of getting fired and losing money`;
+                            break;
                         default:
                             effectDescription = 'Unknown effect';
                     }
 
                     const successEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Item Use`)
+                        .setTitle(`${message.author.username}'s item use`)
                         .setDescription(
                             `*you used a ${result.item ? result.item.name : 'Unknown Item'}!*\n` +
                             `*effect: ${effectDescription}*`
@@ -89,7 +93,7 @@ module.exports = {
                 } else {
                     const errorEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Item Use`)
+                        .setTitle(`${message.author.username}'s item use`)
                         .setDescription(`*${result.error}*`)
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();
