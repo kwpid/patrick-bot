@@ -1,6 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData } = require('../../utils/economyUtils');
-const { formatNumber } = require('./economyUtils');
+const { getUserData, formatNumber } = require('../../utils/economyUtils');
 
 module.exports = {
     name: 'bal',
