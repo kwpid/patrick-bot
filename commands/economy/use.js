@@ -70,7 +70,7 @@ module.exports = {
                             break;
                         case 'money_boost':
                             const moneyBoostPercent = Math.round((effect.value - 1) * 100);
-                            effectDescription = `+${moneyBoostPercent}% Money for jobs for ${effect.duration} minutes, but 25% chance of getting fired and losing money`;
+                            effectDescription = `+${moneyBoostPercent}% Money for 10 minutes`;
                             break;
                         default:
                             effectDescription = 'Unknown effect';
