@@ -737,20 +737,24 @@ async function updateShopItems() {
         // First, set all items to not be on sale
         await pool.query('UPDATE shop SET on_sale = false');
         
-        // Then, delete any existing items that are in the selected items
-        const selectedItemIds = selectedItems.map(item => item.id);
-        await pool.query(
-            'DELETE FROM shop WHERE item_id = ANY($1)',
-            [selectedItemIds]
-        );
-        
-        // Finally, insert the new selected items
+        // Insert or update the selected items
         for (const item of selectedItems) {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
                     tags, value, type, on_sale
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (item_id) 
+                DO UPDATE SET 
+                    name = EXCLUDED.name,
+                    description = EXCLUDED.description,
+                    price = EXCLUDED.price,
+                    emoji_id = EXCLUDED.emoji_id,
+                    tags = EXCLUDED.tags,
+                    value = EXCLUDED.value,
+                    type = EXCLUDED.type,
+                    on_sale = EXCLUDED.on_sale,
+                    last_updated = CURRENT_TIMESTAMP`,
                 [
                     item.id,
                     item.name,
@@ -764,6 +768,37 @@ async function updateShopItems() {
                 ]
             );
         }
+
+        // Verify that items were added
+        const verifyResult = await pool.query(
+            'SELECT COUNT(*) FROM shop WHERE on_sale = true'
+        );
+        
+        if (parseInt(verifyResult.rows[0].count) === 0) {
+            console.error('No items were added to the shop after update');
+            // If no items were added, try to add them again without the update
+            for (const item of selectedItems) {
+                await pool.query(
+                    `INSERT INTO shop (
+                        item_id, name, description, price, emoji_id, 
+                        tags, value, type, on_sale
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    ON CONFLICT DO NOTHING`,
+                    [
+                        item.id,
+                        item.name,
+                        item.description,
+                        item.price,
+                        item.emoji_id,
+                        item.tags,
+                        item.value,
+                        item.type,
+                        true
+                    ]
+                );
+            }
+        }
+
         return true;
     } catch (error) {
         console.error('Error updating shop items:', error);

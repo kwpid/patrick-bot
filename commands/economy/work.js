@@ -24,6 +24,28 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
+            // Get current shift count and minimum required
+            const shiftResult = await pool.query(`
+                SELECT j.daily_shifts, jr.min_shifts
+                FROM jobs j
+                JOIN job_requirements jr ON j.job_id = jr.job_id
+                WHERE j.user_id = $1
+            `, [message.author.id]);
+
+            const { daily_shifts, min_shifts } = shiftResult.rows[0];
+
+            // Check if user has reached their maximum shifts
+            if (daily_shifts >= min_shifts) {
+                const embed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${message.author.username}'s Work`)
+                    .setDescription(`*you've already completed your ${min_shifts} shifts for today! come back tomorrow!*`)
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
+
+                return message.reply({ embeds: [embed] });
+            }
+
             // Check cooldown
             const lastWorked = new Date(userJob.last_worked).getTime();
             const now = Date.now();
@@ -58,16 +80,16 @@ module.exports = {
                 userData.balance += salary;
                 await updateUserData(message.author.id, userData);
 
-                // Get current shift count and minimum required
-                const shiftResult = await pool.query(`
+                // Get updated shift count
+                const updatedShiftResult = await pool.query(`
                     SELECT j.daily_shifts, jr.min_shifts
                     FROM jobs j
                     JOIN job_requirements jr ON j.job_id = jr.job_id
                     WHERE j.user_id = $1
                 `, [message.author.id]);
 
-                const { daily_shifts, min_shifts } = shiftResult.rows[0];
-                const remainingShifts = Math.max(0, min_shifts - daily_shifts);
+                const { daily_shifts: newDailyShifts, min_shifts: newMinShifts } = updatedShiftResult.rows[0];
+                const remainingShifts = Math.max(0, newMinShifts - newDailyShifts);
 
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
@@ -75,9 +97,9 @@ module.exports = {
                     .setDescription(
                         `${gameResult.message}\n` +
                         `*you earned ${salary} <:patrickcoin:1371211412940132492>!*\n\n` +
-                        `*shifts today: ${daily_shifts}/${min_shifts}*\n` +
-                        `*remaining shifts needed: ${remainingShifts}*\n` +
-                        `⚠️ *remember: you need to complete ${min_shifts} shifts per day to keep your job!*`
+                        `*shifts today: ${newDailyShifts}/${newMinShifts}*\n` +
+                        `*remaining shifts: ${remainingShifts}*\n` +
+                        `⚠️ *remember: you need to complete ${newMinShifts} shifts per day to keep your job!*`
                     )
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
