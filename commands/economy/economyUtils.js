@@ -202,7 +202,7 @@ async function initializeDatabase() {
                     item.tags,
                     item.value,
                     item.type,
-                    item.on_sale,
+                    item.on_sale || true,
                     0
                 ]
             );
@@ -839,6 +839,7 @@ async function recreateAllTables() {
         await pool.query('DROP TABLE IF EXISTS job_requirements CASCADE');
         await pool.query('DROP TABLE IF EXISTS shop CASCADE');
         await pool.query('DROP TABLE IF EXISTS economy CASCADE');
+        await pool.query('DROP TABLE IF EXISTS chests CASCADE');
 
         // Recreate tables in correct order
         await pool.query(`
@@ -866,6 +867,15 @@ async function recreateAllTables() {
                 on_sale BOOLEAN DEFAULT true,
                 discount DECIMAL(3,2) DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE chests (
+                chest_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                emoji_id TEXT NOT NULL
             )
         `);
 
@@ -900,7 +910,44 @@ async function recreateAllTables() {
         `);
 
         // Initialize shop items
-        await initializeShopItems();
+        const shopItems = require('./shopItems.json').items;
+        for (const item of shopItems) {
+            await pool.query(
+                `INSERT INTO shop (
+                    item_id, name, description, price, emoji_id, 
+                    tags, value, type, on_sale, discount
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (item_id) DO NOTHING`,
+                [
+                    item.id,
+                    item.name,
+                    item.description,
+                    item.price,
+                    item.emoji_id,
+                    item.tags,
+                    item.value,
+                    item.type,
+                    item.on_sale || true,
+                    0
+                ]
+            );
+        }
+
+        // Initialize chests
+        const chests = require('./chests.json').chests;
+        for (const [chestId, chestData] of Object.entries(chests)) {
+            await pool.query(
+                `INSERT INTO chests (chest_id, name, description, emoji_id)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (chest_id) DO NOTHING`,
+                [
+                    chestId,
+                    chestData.name,
+                    chestData.description,
+                    "1371269782808039524" // Default chest emoji
+                ]
+            );
+        }
 
         // Initialize job requirements
         const jobs = [
