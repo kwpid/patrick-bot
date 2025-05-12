@@ -71,7 +71,7 @@ module.exports = {
 
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Work`)
+                    .setTitle(`${message.author.username}'s work`)
                     .setDescription(
                         `${gameResult.message}\n` +
                         `*you earned ${salary} <:patrickcoin:1371211412940132492>!*\n\n` +
