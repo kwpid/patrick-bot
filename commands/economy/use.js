@@ -39,7 +39,7 @@ module.exports = {
                 .setTitle(`${message.author.username}'s Usable Items`)
                 .setDescription(
                     usableItems.map(item => 
-                        `${item.emoji_id} **${item.name}** (${item.quantity}x)\n${item.description}`
+                        `<:${item.emoji_id}> **${item.name}** (${item.quantity}x)\n${item.description}`
                     ).join('\n\n')
                 )
                 .setFooter({ text: 'patrick' })

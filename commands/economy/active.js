@@ -11,7 +11,7 @@ module.exports = {
             if (activeEffects.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Active Effects`)
+                    .setTitle(`${message.author.username}'s active effects`)
                     .setDescription("*you don't have any active effects right now!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -21,7 +21,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s Active Effects`)
+                .setTitle(`${message.author.username}'s active effects`)
                 .setDescription(
                     activeEffects.map(effect => {
                         const timeLeft = Math.ceil((new Date(effect.expires_at) - Date.now()) / 1000 / 60);
@@ -34,7 +34,7 @@ module.exports = {
                             default:
                                 effectDescription = 'Unknown effect';
                         }
-                        return `${effect.emoji_id} **${effect.item_name}**\n` +
+                        return `<:${effect.emoji_id}> **${effect.item_name}**\n` +
                                `├ Effect: ${effectDescription}\n` +
                                `└ Time Left: ${timeLeft} minutes`;
                     }).join('\n\n')
