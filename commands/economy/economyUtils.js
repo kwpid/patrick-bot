@@ -91,7 +91,7 @@ async function initializeShopItems() {
                     item.tags,
                     item.value,
                     item.type,
-                    true,
+                    item.on_sale || true,
                     0
                 ]
             );
@@ -185,28 +185,7 @@ async function initializeDatabase() {
         }
 
         // Initialize shop items
-        const shopItems = require('./shopItems.json').items;
-        for (const item of shopItems) {
-            await pool.query(
-                `INSERT INTO shop (
-                    item_id, name, description, price, emoji_id, 
-                    tags, value, type, on_sale, discount
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                ON CONFLICT (item_id) DO NOTHING`,
-                [
-                    item.id,
-                    item.name,
-                    item.description,
-                    item.price,
-                    item.emoji_id,
-                    item.tags,
-                    item.value,
-                    item.type,
-                    item.on_sale || true,
-                    0
-                ]
-            );
-        }
+        await initializeShopItems();
 
         // Create jobs table
         await pool.query(`
@@ -267,9 +246,38 @@ async function initializeDatabase() {
     }
 }
 
+// Add missing columns to existing tables
+async function addMissingColumns() {
+    try {
+        // Check if discount column exists in shop table
+        const columnCheck = await pool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'shop' 
+            AND column_name = 'discount'
+        `);
+
+        // If discount column doesn't exist, add it
+        if (columnCheck.rows.length === 0) {
+            await pool.query(`
+                ALTER TABLE shop 
+                ADD COLUMN discount DECIMAL(3,2) DEFAULT 0
+            `);
+            console.log('Added discount column to shop table');
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error adding missing columns:', error);
+        return false;
+    }
+}
+
 // Call initialize on startup and log the result
-initializeDatabase().then(() => {
+initializeDatabase().then(async () => {
     console.log('Database initialization completed');
+    // Add any missing columns
+    await addMissingColumns();
 }).catch(error => {
     console.error('Database initialization failed:', error);
 });
@@ -683,6 +691,16 @@ async function getUserJob(userId) {
 
 async function setUserJob(userId, jobId) {
     try {
+        if (jobId === null) {
+            // Handle quitting job
+            await pool.query(
+                'DELETE FROM jobs WHERE user_id = $1',
+                [userId]
+            );
+            return true;
+        }
+
+        // Handle getting a new job
         const jobReq = await getJobRequirements(jobId);
         if (!jobReq) {
             return false;
@@ -999,5 +1017,6 @@ module.exports = {
     recreateJobRequirementsTable,
     recreateJobsTable,
     formatNumber,
-    recreateAllTables
+    recreateAllTables,
+    addMissingColumns
 }; 
