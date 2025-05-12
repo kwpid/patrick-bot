@@ -12,7 +12,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s Profile`)
+                .setTitle(`${message.author.username}'s profile`)
                 .setDescription(
                     `**level**\n\`${userData.level}\`\n\n` +
                     `**progress**\n\`${userData.xp}/${userData.nextLevelXp} XP\`\n` +
