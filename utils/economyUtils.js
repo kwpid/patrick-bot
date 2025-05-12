@@ -1181,13 +1181,19 @@ async function resetDailyShifts() {
 }
 
 module.exports = {
+    pool,
+    testConnection,
+    recreateShopTable,
+    initializeShopItems,
+    initializeDatabase,
+    addMissingColumns,
     getUserData,
     updateUserData,
+    calculateNextLevelXp,
     addXp,
-    generateProgressBar,
-    defaultUserData,
     trackMessage,
     trackCommand,
+    generateProgressBar,
     getUserInventory,
     addItemToInventory,
     removeItemFromInventory,
@@ -1202,9 +1208,8 @@ module.exports = {
     recreateJobsTable,
     formatNumber,
     recreateAllTables,
-    addMissingColumns,
-    incrementDailyShifts,
-    resetDailyShifts,
     getLastQuitTime,
-    setLastQuitTime
+    setLastQuitTime,
+    incrementDailyShifts,
+    resetDailyShifts
 }; 
