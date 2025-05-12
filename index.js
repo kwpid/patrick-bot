@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, Partials, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const { trackMessage, trackCommand } = require('./commands/economy/economyUtils');
+const { trackMessage, trackCommand } = require('./utils/economyUtils');
 
 // Environment variables
 const GUILD_ID = process.env.GUILD_ID;

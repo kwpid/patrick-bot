@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { recreateJobRequirementsTable, recreateJobsTable } = require('./economyUtils');
+const { recreateJobRequirementsTable, recreateJobsTable } = require('../../utils/economyUtils');
 
 module.exports = {
     name: 'resetjobs',
