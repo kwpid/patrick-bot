@@ -1021,6 +1021,17 @@ async function recreateAllTables() {
     }
 }
 
+const quitCooldowns = new Map(); // Temporary in-memory storage; use a database in production
+
+function getLastQuitTime(userId) {
+    return quitCooldowns.get(userId) || null;
+}
+
+function setLastQuitTime(userId, timestamp) {
+    quitCooldowns.set(userId, timestamp);
+}
+
+
 module.exports = {
     getUserData,
     updateUserData,
