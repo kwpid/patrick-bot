@@ -25,10 +25,10 @@ module.exports = {
                 .setPlaceholder('Select an item to use')
                 .addOptions(
                     usableItems.map(item => ({
-                        label: item.name,
+                        label: item.name || 'Unknown Item',
                         description: item.description,
                         value: item.item_id,
-                        emoji: item.emoji_id
+                        emoji: item.emoji_id ? { id: item.emoji_id } : undefined
                     }))
                 );
 
