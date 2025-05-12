@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUserData, getUserJob, updateUserData, updateLastWorked, incrementDailyShifts, resetDailyShifts } = require('../../utils/economyUtils');
+const { getUserData, getUserJob, updateUserData, updateLastWorked, incrementDailyShifts, resetDailyShifts, pool } = require('../../utils/economyUtils');
 const { runRandomGame } = require('../../games/workGames');
 
 module.exports = {
