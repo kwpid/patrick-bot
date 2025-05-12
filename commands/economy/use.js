@@ -11,7 +11,7 @@ module.exports = {
             if (usableItems.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Items`)
+                    .setTitle(`${message.author.username}'s items`)
                     .setDescription("*you don't have any usable items in your inventory!*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -76,7 +76,7 @@ module.exports = {
                         .setColor('#292929')
                         .setTitle(`${message.author.username}'s Item Use`)
                         .setDescription(
-                            `*you used a ${result.item.name}!*\n` +
+                            `*you used a ${result.item ? result.item.name : 'Unknown Item'}!*\n` +
                             `*effect: ${effectDescription}*`
                         )
                         .setFooter({ text: 'patrick' })
