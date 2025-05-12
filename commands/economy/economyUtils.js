@@ -244,7 +244,7 @@ async function getUserData(userId) {
         );
 
         if (result.rows.length === 0) {
-            // Create new user data
+            // Create new user data with validated values
             const defaultData = {
                 balance: 0,
                 level: 1,
@@ -258,15 +258,27 @@ async function getUserData(userId) {
             return defaultData;
         }
 
+        // Ensure level is at least 1 and XP is non-negative
+        const level = Math.max(1, parseInt(result.rows[0].level) || 1);
+        const xp = Math.max(0, parseInt(result.rows[0].xp) || 0);
+        const nextLevelXp = Math.max(100, parseInt(result.rows[0].next_level_xp) || 100);
+
+        // If the data is invalid, fix it
+        if (level !== parseInt(result.rows[0].level) || xp !== parseInt(result.rows[0].xp) || nextLevelXp !== parseInt(result.rows[0].next_level_xp)) {
+            await pool.query(
+                'UPDATE economy SET level = $1, xp = $2, next_level_xp = $3 WHERE user_id = $4',
+                [level, xp, nextLevelXp, userId]
+            );
+        }
+
         return {
-            balance: result.rows[0].balance,
-            level: result.rows[0].level,
-            xp: result.rows[0].xp,
-            nextLevelXp: result.rows[0].next_level_xp
+            balance: parseInt(result.rows[0].balance) || 0,
+            level: level,
+            xp: xp,
+            nextLevelXp: nextLevelXp
         };
     } catch (error) {
         console.error('Error getting user data:', error);
-        // Instead of returning default data, throw the error
         throw error;
     }
 }
@@ -274,14 +286,28 @@ async function getUserData(userId) {
 // Update user data
 async function updateUserData(userId, newData) {
     try {
-        // Validate data before updating
+        // Get current data to ensure we don't accidentally reset values
+        const currentData = await getUserData(userId);
+        
+        // Validate and merge data
         const validatedData = {
-            balance: Math.max(0, Math.floor(newData.balance)) || 0,
-            level: Math.max(1, Math.floor(newData.level)) || 1,
-            xp: Math.max(0, Math.floor(newData.xp)) || 0,
-            nextLevelXp: Math.max(100, Math.floor(newData.nextLevelXp)) || 100
+            balance: Math.max(0, Math.floor(newData.balance)) || currentData.balance,
+            level: Math.max(1, Math.floor(newData.level)) || currentData.level,
+            xp: Math.max(0, Math.floor(newData.xp)) || currentData.xp,
+            nextLevelXp: Math.max(100, Math.floor(newData.nextLevelXp)) || currentData.nextLevelXp
         };
 
+        // Ensure level progression is valid
+        if (validatedData.level < currentData.level) {
+            console.error('Attempted to set level lower than current level:', {
+                userId,
+                currentLevel: currentData.level,
+                attemptedLevel: validatedData.level
+            });
+            validatedData.level = currentData.level;
+        }
+
+        // Update the database with validated data
         await pool.query(
             `UPDATE economy 
              SET balance = $1, level = $2, xp = $3, next_level_xp = $4, updated_at = CURRENT_TIMESTAMP
