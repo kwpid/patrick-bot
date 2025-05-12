@@ -22,19 +22,10 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Cooldown check
-            const lastQuit = await getLastQuitTime(userId);
-            const now = Date.now();
-
-            if (lastQuit && now - new Date(lastQuit).getTime() < COOLDOWN_TIME) {
-                const remaining = Math.ceil((COOLDOWN_TIME - (now - new Date(lastQuit).getTime())) / 60000);
-                return message.reply(`*you must wait ${remaining} more minute(s) before quitting again.*`);
-            }
-
+            // Remove cooldown check and last quit time references
             const success = await setUserJob(userId, null);
 
             if (success) {
-                await setLastQuitTime(userId, now); // Save cooldown
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s Jobs`)

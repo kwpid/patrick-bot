@@ -36,10 +36,10 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s Usable Items`)
+                .setTitle(`${message.author.username}'s usable items`)
                 .setDescription(
                     usableItems.map(item => 
-                        `<:${item.emoji_id}> **${item.name}** (${item.quantity}x)\n${item.description}`
+                        `<:${item.name}:${item.emoji_id}> **${item.name}** (${item.quantity}x)\n${item.description}`
                     ).join('\n\n')
                 )
                 .setFooter({ text: 'patrick' })
