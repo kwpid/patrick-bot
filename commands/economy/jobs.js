@@ -3,6 +3,8 @@ const { getAllJobs, getUserData, getUserJob, formatNumber } = require('../../uti
 const { getJobRequirements } = require('../../utils/economyUtils');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
+const CHECKMARK = '<:checkmark:1371506056177516586>';
+const FAIL = '<:fail:1371506033431810139>';
 const JOBS_PER_PAGE = 5;
 
 module.exports = {
@@ -32,23 +34,26 @@ module.exports = {
                     .setTitle(`${message.author.username}'s Jobs`)
                     .setDescription(
                         pageJobs.map(job => {
-                            let jobDisplay = `**${job.job_name}**\n`;
+                            // Determine if job is available based on level
+                            const isAvailable = userData.level >= job.required_level;
+                            const emoji = isAvailable ? CHECKMARK : FAIL;
+                            
+                            let jobDisplay = `${emoji} **${job.job_name}**\n`;
                             jobDisplay += `├ Salary: ${formatNumber(job.salary)} ${PATRICK_COIN} per shift\n`;
                             jobDisplay += `├ Required Level: ${job.required_level}\n`;
+                            jobDisplay += `├ Minimum Shifts: ${job.min_shifts} per day\n`;
                             jobDisplay += `└ ID: \`${job.job_id}\``;
                             
-                            // Add indicators for current job and level requirement
+                            // Add indicator for current job
                             if (userJob && userJob.job_name === job.job_name) {
                                 jobDisplay += ' *(current job)*';
-                            } else if (userData.level < job.required_level) {
-                                jobDisplay += ' *(level too low)*';
                             }
                             
                             return jobDisplay;
                         }).join('\n\n')
                     )
                     .setFooter({ 
-                        text: `Page ${currentPage + 1}/${totalPages} • patrick` 
+                        text: `Page ${currentPage + 1}/${totalPages} • patrick • ${CHECKMARK} = Available • ${FAIL} = Locked` 
                     })
                     .setTimestamp();
 
