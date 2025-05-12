@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getUserData, getUserInventory, updateUserData, getShopItems, addItemToInventory, formatNumber } = require('../../utils/economyUtils');
+const { getUserData, getUserInventory, updateUserData, getShopItems, addItemToInventory, formatNumber, updateShopItems } = require('../../utils/economyUtils');
 const { shopItems } = require('../../data/shopItems.json');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
