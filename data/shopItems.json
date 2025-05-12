@@ -58,16 +58,17 @@
         {
             "id": "beer",
             "name": "Mug of Beer",
-            "description": "A refreshing mug of beer. Gives a flat +5% more money for every work shift.",
+            "description": "A refreshing mug of beer. Gives a flat +5% more money for every work shift for 10 minutes.",
             "price": 100,
-            "emoji_id": "1371211412940132492",
+            "emoji_id": "1368096669216018432",
             "tags": ["drink", "alcohol"],
             "value": 50,
             "type": "usable",
+            "on_sale": true,
             "effect": {
                 "type": "money_boost",
                 "value": 1.05,
-                "duration": 3600
+                "duration": 600
             }
         },
         {
