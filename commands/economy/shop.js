@@ -2,6 +2,7 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { getShopItems, updateShopItems, addItemToInventory, getUserData, updateUserData, formatNumber } = require('./economyUtils');
 
 const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
+const SHOP_EMOJI = '<:shop:1371495749124100186>';
 
 // Function to check if shop needs to be reset (12 PM EST)
 function shouldResetShop() {
@@ -41,7 +42,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle('patrick\'s shop')
+                .setTitle(`${SHOP_EMOJI} patrick's shop`)
                 .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
                 .setDescription(
                     shopItems.map(item => {
@@ -104,6 +105,19 @@ module.exports = {
                 }
 
                 try {
+                    // Add a close button to the last row
+                    const closeButton = new ButtonBuilder()
+                        .setCustomId('close_shop')
+                        .setLabel('Close Shop')
+                        .setStyle(ButtonStyle.Danger);
+
+                    // Add close button to the last row if there's space, otherwise create a new row
+                    if (rows[rows.length - 1].components.length < 5) {
+                        rows[rows.length - 1].addComponents(closeButton);
+                    } else {
+                        rows.push(new ActionRowBuilder().addComponents(closeButton));
+                    }
+
                     await interaction.reply({
                         content: "*which item would you like to buy?*",
                         components: rows,
@@ -111,7 +125,7 @@ module.exports = {
                     });
 
                     const itemCollector = interaction.channel.createMessageComponentCollector({
-                        time: 30000
+                        time: 300000 // 5 minutes timeout
                     });
 
                     itemCollector.on('collect', async (itemInteraction) => {
@@ -120,6 +134,16 @@ module.exports = {
                                 content: "*this isn't your shop!*",
                                 ephemeral: true
                             });
+                        }
+
+                        // Handle close button
+                        if (itemInteraction.customId === 'close_shop') {
+                            await itemInteraction.update({
+                                content: "*shop closed!*",
+                                components: []
+                            });
+                            itemCollector.stop();
+                            return;
                         }
 
                         const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
@@ -169,8 +193,6 @@ module.exports = {
                                 console.error('Error sending error message:', replyError);
                             }
                         }
-
-                        itemCollector.stop();
                     });
 
                     itemCollector.on('end', () => {

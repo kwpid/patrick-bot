@@ -111,13 +111,56 @@
             "on_sale": true
         },
         {
+            "id": "devil_pitchfork",
+            "name": "Devils Pitchfork",
+            "description": "A high valued pitchfork from the devil himself",
+            "price": 666666,
+            "emoji_id": "1371492762427330662",
+            "tags": ["Collectible"],
+            "value": 666666,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "kelp_shake",
+            "name": "Kelp Shake",
+            "description": "A shake made from kelp, it's good for you!",
+            "price": 150,
+            "emoji_id": "1371493471201919126",
+            "tags": ["Collectible"],
+            "value": 100,
+            "type": "item",
+            "on_sale": true
+        },
+        {
+            "id": "toolbox",
+            "name": "Toolbox",
+            "description": "A very (not) useful toolbox",
+            "price": 200,
+            "emoji_id": "1371493471201919126",
+            "tags": ["Collectible"],
+            "value": 150,
+            "type": "item",
+            "on_sale": true
+        },
+        {
             "id": "chest_1",
             "name": "Basic Chest",
             "description": "A basic chest that might contain some goodies!",
             "price": 1000,
-            "emoji_id": "1371269782808039524",
+            "emoji_id": "1371495455384670370",
             "tags": ["chest", "basic"],
             "value": 500,
+            "type": "chest"
+        },
+        {
+            "id": "chest_2",
+            "name": "Rare Chest",
+            "description": "A rare chest that might contain some rare goodies!",
+            "price": 10000,
+            "emoji_id": "1371495434253766697",
+            "tags": ["chest", "rare"],
+            "value": 5000,
             "type": "chest"
         }
     ]

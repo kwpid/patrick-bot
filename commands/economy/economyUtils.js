@@ -219,6 +219,9 @@ async function initializeDatabase() {
                 job_id TEXT NOT NULL,
                 job_name TEXT NOT NULL,
                 last_worked TIMESTAMP,
+                last_quit_time TIMESTAMP,
+                daily_shifts INTEGER DEFAULT 0,
+                last_shift_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
                 FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
             )
@@ -230,7 +233,8 @@ async function initializeDatabase() {
                 job_id TEXT PRIMARY KEY,
                 job_name TEXT NOT NULL,
                 required_level INTEGER NOT NULL,
-                salary INTEGER NOT NULL
+                salary INTEGER NOT NULL,
+                min_shifts INTEGER NOT NULL DEFAULT 3
             )
         `);
 
@@ -238,22 +242,22 @@ async function initializeDatabase() {
         const jobCheck = await pool.query('SELECT COUNT(*) FROM job_requirements');
         if (jobCheck.rows[0].count === '0') {
             const jobs = [
-                ['lemonade_booth', 'Lemonade Booth', 0, 200],
-                ['chum_janitor', 'Chum Bucket Janitor', 3, 350],
-                ['shake_server', 'Kelp Shake Server', 5, 500],
-                ['boating_assistant', 'Boating School Assistant', 8, 650],
-                ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800],
-                ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
-                ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200],
-                ['tour_guide', 'Atlantis Tour Guide', 21, 1500],
-                ['krab_manager', 'Krusty Krab Manager', 25, 1800],
-                ['krab_owner', 'Krusty Krab Owner', 30, 2500]
+                ['lemonade_booth', 'Lemonade Booth', 0, 200, 2],
+                ['chum_janitor', 'Chum Bucket Janitor', 3, 350, 3],
+                ['shake_server', 'Kelp Shake Server', 5, 500, 3],
+                ['boating_assistant', 'Boating School Assistant', 8, 650, 4],
+                ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800, 4],
+                ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000, 4],
+                ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200, 5],
+                ['tour_guide', 'Atlantis Tour Guide', 21, 1500, 5],
+                ['krab_manager', 'Krusty Krab Manager', 25, 1800, 6],
+                ['krab_owner', 'Krusty Krab Owner', 30, 2500, 6]
             ];
 
-            for (const [id, name, level, salary] of jobs) {
+            for (const [id, name, level, salary, minShifts] of jobs) {
                 await pool.query(
-                    'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
-                    [id, name, level, salary]
+                    'INSERT INTO job_requirements (job_id, job_name, required_level, salary, min_shifts) VALUES ($1, $2, $3, $4, $5)',
+                    [id, name, level, salary, minShifts]
                 );
             }
         }
@@ -794,30 +798,31 @@ async function recreateJobRequirementsTable() {
                 job_id TEXT PRIMARY KEY,
                 job_name TEXT NOT NULL,
                 required_level INTEGER NOT NULL,
-                salary INTEGER NOT NULL
+                salary INTEGER NOT NULL,
+                min_shifts INTEGER NOT NULL DEFAULT 3
             )
         `);
         console.log('Created new job_requirements table');
 
         // Initialize job requirements
         const jobs = [
-            ['lemonade_booth', 'Lemonade Booth', 0, 200],
-            ['chum_janitor', 'Chum Bucket Janitor', 3, 350],
-            ['shake_server', 'Kelp Shake Server', 5, 500],
-            ['boating_assistant', 'Boating School Assistant', 8, 650],
-            ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800],
-            ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
-            ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200],
-            ['tour_guide', 'Atlantis Tour Guide', 21, 1500],
-            ['krab_manager', 'Krusty Krab Manager', 25, 1800],
-            ['krab_owner', 'Krusty Krab Owner', 30, 2500]
+            ['lemonade_booth', 'Lemonade Booth', 0, 200, 2],
+            ['chum_janitor', 'Chum Bucket Janitor', 3, 350, 3],
+            ['shake_server', 'Kelp Shake Server', 5, 500, 3],
+            ['boating_assistant', 'Boating School Assistant', 8, 650, 4],
+            ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800, 4],
+            ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000, 4],
+            ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200, 5],
+            ['tour_guide', 'Atlantis Tour Guide', 21, 1500, 5],
+            ['krab_manager', 'Krusty Krab Manager', 25, 1800, 6],
+            ['krab_owner', 'Krusty Krab Owner', 30, 2500, 6]
         ];
 
         console.log('Inserting jobs into job_requirements table...');
-        for (const [id, name, level, salary] of jobs) {
+        for (const [id, name, level, salary, minShifts] of jobs) {
             await pool.query(
-                'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
-                [id, name, level, salary]
+                'INSERT INTO job_requirements (job_id, job_name, required_level, salary, min_shifts) VALUES ($1, $2, $3, $4, $5)',
+                [id, name, level, salary, minShifts]
             );
             console.log(`Inserted job: ${id} (${name})`);
         }
@@ -847,6 +852,9 @@ async function recreateJobsTable() {
                 job_id TEXT NOT NULL,
                 job_name TEXT NOT NULL,
                 last_worked TIMESTAMP,
+                last_quit_time TIMESTAMP,
+                daily_shifts INTEGER DEFAULT 0,
+                last_shift_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
                 FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
             )
@@ -937,7 +945,8 @@ async function recreateAllTables() {
                 job_id TEXT PRIMARY KEY,
                 job_name TEXT NOT NULL,
                 required_level INTEGER NOT NULL,
-                salary INTEGER NOT NULL
+                salary INTEGER NOT NULL,
+                min_shifts INTEGER NOT NULL DEFAULT 3
             )
         `);
 
@@ -947,6 +956,9 @@ async function recreateAllTables() {
                 job_id TEXT NOT NULL,
                 job_name TEXT NOT NULL,
                 last_worked TIMESTAMP,
+                last_quit_time TIMESTAMP,
+                daily_shifts INTEGER DEFAULT 0,
+                last_shift_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
                 FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
             )
@@ -994,22 +1006,22 @@ async function recreateAllTables() {
 
         // Initialize job requirements
         const jobs = [
-            ['lemonade_booth', 'Lemonade Booth', 0, 200],
-            ['chum_janitor', 'Chum Bucket Janitor', 3, 350],
-            ['shake_server', 'Kelp Shake Server', 5, 500],
-            ['boating_assistant', 'Boating School Assistant', 8, 650],
-            ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800],
-            ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000],
-            ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200],
-            ['tour_guide', 'Atlantis Tour Guide', 21, 1500],
-            ['krab_manager', 'Krusty Krab Manager', 25, 1800],
-            ['krab_owner', 'Krusty Krab Owner', 30, 2500]
+            ['lemonade_booth', 'Lemonade Booth', 0, 200, 2],
+            ['chum_janitor', 'Chum Bucket Janitor', 3, 350, 3],
+            ['shake_server', 'Kelp Shake Server', 5, 500, 3],
+            ['boating_assistant', 'Boating School Assistant', 8, 650, 4],
+            ['jelly_harvester', 'Jellyfish Jelly Harvester', 11, 800, 4],
+            ['goo_lifeguard', 'Lifeguard at Goo Lagoon', 14, 1000, 4],
+            ['lab_assistant', 'Sandy\'s Lab Assistant', 17, 1200, 5],
+            ['tour_guide', 'Atlantis Tour Guide', 21, 1500, 5],
+            ['krab_manager', 'Krusty Krab Manager', 25, 1800, 6],
+            ['krab_owner', 'Krusty Krab Owner', 30, 2500, 6]
         ];
 
-        for (const [id, name, level, salary] of jobs) {
+        for (const [id, name, level, salary, minShifts] of jobs) {
             await pool.query(
-                'INSERT INTO job_requirements (job_id, job_name, required_level, salary) VALUES ($1, $2, $3, $4)',
-                [id, name, level, salary]
+                'INSERT INTO job_requirements (job_id, job_name, required_level, salary, min_shifts) VALUES ($1, $2, $3, $4, $5)',
+                [id, name, level, salary, minShifts]
             );
         }
 
@@ -1021,16 +1033,85 @@ async function recreateAllTables() {
     }
 }
 
-const quitCooldowns = new Map(); // Temporary in-memory storage; use a database in production
-
-function getLastQuitTime(userId) {
-    return quitCooldowns.get(userId) || null;
+// Replace the in-memory cooldown functions with database functions
+async function getLastQuitTime(userId) {
+    try {
+        const result = await pool.query(
+            'SELECT last_quit_time FROM jobs WHERE user_id = $1',
+            [userId]
+        );
+        return result.rows[0]?.last_quit_time || null;
+    } catch (error) {
+        console.error('Error getting last quit time:', error);
+        return null;
+    }
 }
 
-function setLastQuitTime(userId, timestamp) {
-    quitCooldowns.set(userId, timestamp);
+async function setLastQuitTime(userId, timestamp) {
+    try {
+        await pool.query(
+            'UPDATE jobs SET last_quit_time = $1 WHERE user_id = $2',
+            [new Date(timestamp), userId]
+        );
+        return true;
+    } catch (error) {
+        console.error('Error setting last quit time:', error);
+        return false;
+    }
 }
 
+// Add new functions for shift management
+async function incrementDailyShifts(userId) {
+    try {
+        await pool.query(
+            'UPDATE jobs SET daily_shifts = daily_shifts + 1 WHERE user_id = $1',
+            [userId]
+        );
+        return true;
+    } catch (error) {
+        console.error('Error incrementing daily shifts:', error);
+        return false;
+    }
+}
+
+async function resetDailyShifts() {
+    try {
+        const now = new Date();
+        const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        
+        // Only reset if it's midnight EST
+        if (est.getHours() === 0 && est.getMinutes() === 0) {
+            // Get all jobs and check minimum shifts
+            const result = await pool.query(`
+                SELECT j.user_id, j.job_id, j.job_name, j.daily_shifts, jr.min_shifts
+                FROM jobs j
+                JOIN job_requirements jr ON j.job_id = jr.job_id
+                WHERE j.last_shift_reset < CURRENT_DATE
+            `);
+
+            for (const job of result.rows) {
+                // 70% chance of getting fired if minimum shifts not met
+                if (job.daily_shifts < job.min_shifts && Math.random() < 0.7) {
+                    await setUserJob(job.user_id, null);
+                    // Notify user (you'll need to implement this)
+                    console.log(`User ${job.user_id} was fired from ${job.job_name} for not meeting minimum shifts`);
+                }
+            }
+
+            // Reset shifts for all jobs
+            await pool.query(`
+                UPDATE jobs 
+                SET daily_shifts = 0, 
+                    last_shift_reset = CURRENT_TIMESTAMP 
+                WHERE last_shift_reset < CURRENT_DATE
+            `);
+        }
+        return true;
+    } catch (error) {
+        console.error('Error resetting daily shifts:', error);
+        return false;
+    }
+}
 
 module.exports = {
     getUserData,
@@ -1054,5 +1135,7 @@ module.exports = {
     recreateJobsTable,
     formatNumber,
     recreateAllTables,
-    addMissingColumns
+    addMissingColumns,
+    incrementDailyShifts,
+    resetDailyShifts
 }; 
