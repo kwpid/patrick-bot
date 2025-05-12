@@ -58,11 +58,11 @@
         {
             "id": "beer",
             "name": "Mug of Beer",
-            "description": "Dont drink at work ;)",
-            "price": 350,
+            "description": "+50% money from work shifts, but has a 25% chance of getting you fired and losing money",
+            "price": 5000,
             "emoji_id": "1368096669216018432",
             "tags": ["Collectible", "Usable"],
-            "value": 300,
+            "value": 3750,
             "type": "usable",
             "on_sale": true,
             "effect": {

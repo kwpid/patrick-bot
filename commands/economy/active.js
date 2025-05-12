@@ -34,7 +34,7 @@ module.exports = {
                             default:
                                 effectDescription = 'Unknown effect';
                         }
-                        return `<:${effect.item_name}:${effect.emoji_id}> **${effect.item_name}**\n` +
+                        return `<:${effect.item_name.replace(/\s+/g, '')}:${effect.emoji_id}> **${effect.item_name}**\n` +
                                `├ Effect: ${effectDescription}\n` +
                                `└ Time Left: ${timeLeft} minutes`;
                     }).join('\n\n')
