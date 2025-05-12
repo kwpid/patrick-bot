@@ -42,7 +42,7 @@ module.exports = {
             }
 
             // Run a random game
-            const result = await runRandomGame(message);
+            const gameResult = await runRandomGame(message);
 
             // Update last worked time and increment shifts
             const worked = await updateLastWorked(message.author.id);
@@ -52,28 +52,28 @@ module.exports = {
                 return message.reply("*something went wrong while updating your work status!*");
             }
 
-            if (result.success) {
+            if (gameResult.success) {
                 // Update user balance with salary
                 const salary = userJob.salary;
                 userData.balance += salary;
                 await updateUserData(message.author.id, userData);
 
                 // Get current shift count and minimum required
-                const result = await pool.query(`
+                const shiftResult = await pool.query(`
                     SELECT j.daily_shifts, jr.min_shifts
                     FROM jobs j
                     JOIN job_requirements jr ON j.job_id = jr.job_id
                     WHERE j.user_id = $1
                 `, [message.author.id]);
 
-                const { daily_shifts, min_shifts } = result.rows[0];
+                const { daily_shifts, min_shifts } = shiftResult.rows[0];
                 const remainingShifts = Math.max(0, min_shifts - daily_shifts);
 
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s Work`)
                     .setDescription(
-                        `${result.message}\n` +
+                        `${gameResult.message}\n` +
                         `*you earned ${salary} <:patrickcoin:1371211412940132492>!*\n\n` +
                         `*shifts today: ${daily_shifts}/${min_shifts}*\n` +
                         `*remaining shifts needed: ${remainingShifts}*\n` +
@@ -87,7 +87,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s Work`)
-                    .setDescription(`${result.message}\n*try again later!*`)
+                    .setDescription(`${gameResult.message}\n*try again later!*`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
