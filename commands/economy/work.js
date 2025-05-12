@@ -16,7 +16,7 @@ module.exports = {
             if (!userJob) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Work`)
+                    .setTitle(`${message.author.username}'s work`)
                     .setDescription("*you don't have a job! use `pa jobs` to see available jobs.*")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
@@ -29,10 +29,10 @@ module.exports = {
                 const lastWorked = new Date(userJob.last_worked);
                 const now = new Date();
                 const timeDiff = now - lastWorked;
-                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                const minutesDiff = timeDiff / (1000 * 60);
 
-                if (hoursDiff < 1) {
-                    const minutesLeft = Math.ceil(60 - (hoursDiff * 60));
+                if (minutesDiff < 15) {
+                    const minutesLeft = Math.ceil(15 - minutesDiff);
                     return message.reply(`*you can work again in ${minutesLeft} minutes!*`);
                 }
             }
@@ -131,7 +131,7 @@ module.exports = {
             } else {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Work`)
+                    .setTitle(`${message.author.username}'s work`)
                     .setDescription(`${gameResult.message}\n*try again later!*`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
