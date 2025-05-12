@@ -58,7 +58,7 @@
         {
             "id": "beer",
             "name": "Mug of Beer",
-            "description": "Drink responsibly!! Grants +50% money from work shifts, but has a 25% chance of getting you fired and losing money.",
+            "description": "Dont drink at work ;)",
             "price": 350,
             "emoji_id": "1368096669216018432",
             "tags": ["Collectible", "Usable"],
@@ -119,7 +119,7 @@
         {
             "id": "kelp_shake",
             "name": "Kelp Shake",
-            "description": "A shake made from kelp, it's good for you! Grants +10% XP boost for 10 minutes.",
+            "description": "A shake made from kelp. Grants +10% XP boost for 10 minutes.",
             "price": 150,
             "emoji_id": "1371493471201919126",
             "tags": ["Collectible", "Usable"],
