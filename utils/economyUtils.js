@@ -1380,13 +1380,22 @@ async function useItem(userId, itemId) {
 
         // Check if user already has an active effect from this item
         const existingEffect = await pool.query(
-            `SELECT * FROM active_effects 
-             WHERE user_id = $1 AND item_id = $2 AND expires_at > CURRENT_TIMESTAMP`,
+            `SELECT ae.*, s.name as item_name 
+             FROM active_effects ae
+             JOIN shop s ON ae.item_id = s.item_id
+             WHERE ae.user_id = $1 
+             AND ae.item_id = $2 
+             AND ae.expires_at > CURRENT_TIMESTAMP`,
             [userId, itemId]
         );
 
         if (existingEffect.rows.length > 0) {
-            return { success: false, message: `You already have an active effect from ${item.name}!` };
+            const effect = existingEffect.rows[0];
+            const timeLeft = Math.ceil((new Date(effect.expires_at) - Date.now()) / 1000 / 60);
+            return { 
+                success: false, 
+                message: `You already have an active effect from ${effect.item_name}! (${timeLeft} minutes remaining)`
+            };
         }
 
         // Add active effect
@@ -1408,7 +1417,7 @@ async function useItem(userId, itemId) {
 
         return { 
             success: true, 
-            message: `Used ${item.name}! Effect: +${Math.round((item.effect_value - 1) * 100)}% XP for ${item.effect_duration / 60} minutes.`,
+            message: `Used ${item.name}! Effect: +${Math.round((item.effect_value - 1) * 100)}% ${item.effect_type === 'xp_boost' ? 'XP' : 'Money'} for ${item.effect_duration / 60} minutes.`,
             effect: {
                 type: item.effect_type,
                 value: item.effect_value,
