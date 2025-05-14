@@ -61,7 +61,7 @@
             "description": "A refreshing mug of beer. Gives a flat +5% more money for every work shift for 10 minutes.",
             "price": 100,
             "emoji_id": "1368096669216018432",
-            "tags": ["drink", "alcohol"],
+            "tags": ["Usable"],
             "value": 50,
             "type": "usable",
             "on_sale": true,
@@ -121,7 +121,7 @@
             "description": "A shake made from kelp. Grants +10% XP boost for 10 minutes.",
             "price": 150,
             "emoji_id": "1371493471201919126",
-            "tags": ["Collectible", "Usable"],
+            "tags": ["Usable"],
             "value": 100,
             "type": "usable",
             "on_sale": true,
@@ -159,7 +159,7 @@
             "description": "A basic chest that might contain some goodies!",
             "price": 1000,
             "emoji_id": "1371495455384670370",
-            "tags": ["chest", "basic"],
+            "tags": ["Chest"],
             "value": 500,
             "type": "chest"
         },
@@ -169,7 +169,7 @@
             "description": "A rare chest that might contain some rare goodies!",
             "price": 10000,
             "emoji_id": "1371495434253766697",
-            "tags": ["chest", "rare"],
+            "tags": ["Chest"],
             "value": 5000,
             "type": "chest"
         }
