@@ -5,6 +5,8 @@ const emojis = require ('../../data/emojis.json')
 module.exports = {
     name: 'profile',
     description: 'view your profile',
+    usage: 'pa profile',
+    aliases: ['p', 'prof'],
     async execute(message, client) {
         try {
             const userData = await getUserData(message.author.id);
@@ -16,7 +18,7 @@ module.exports = {
                 .setTitle(`${message.author.username}'s profile`)
                 .setDescription(
                     `**level**\n\`${userData.level}\`\n\n` +
-                    `**progress**\n\`${userData.xp}/${userData.nextLevelXp} XP\`\n` +
+                    `**progress**\n\`${userData.xp}/${userData.nextLevelXp} xp\`\n` +
                     `${progressBar}\n\n` +
                     `**balance**\n\`${formatNumber(userData.balance)}\` ${emojis.coin}\n\n` +
                     `**job**\n\`${userJob ? userJob.job_name : 'none'}\``
