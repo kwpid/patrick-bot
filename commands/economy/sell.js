@@ -1,6 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { getUserData, getUserInventory, removeItemFromInventory, updateUserData } = require('../../utils/economyUtils');
 const { shopItems } = require('../../data/shopItems.json');
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'sell',
@@ -11,8 +12,8 @@ module.exports = {
             if (!userData) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Shop`)
-                    .setDescription("*you don't have an account yet!*")
+                    .setTitle(`${message.author.username}'s sell`)
+                    .setDescription("you don't have an account yet!")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
                 
@@ -23,8 +24,8 @@ module.exports = {
             if (inventory.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Shop`)
-                    .setDescription("*your inventory is empty!*")
+                    .setTitle(`${message.author.username}'s sell`)
+                    .setDescription("your inventory is empty, cant sell nothing")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
                 
@@ -34,11 +35,11 @@ module.exports = {
             // Create select menu with inventory items
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('sell_item')
-                .setPlaceholder('Select an item to sell')
+                .setPlaceholder('select an item to sell')
                 .addOptions(
                     inventory.map(item => ({
                         label: item.name,
-                        description: `Sell for ${Math.floor(item.price * 0.5)} coins`,
+                        description: `sell for ${Math.floor(item.price * 0.5)} ${emojis.coin}`,
                         value: item.item_id,
                         emoji: `<:${item.name.toLowerCase().replace(/\s+/g, '_')}:${item.emoji_id}>`
                     }))
@@ -49,7 +50,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s Shop`)
-                .setDescription("*select an item to sell from your inventory*")
+                .setDescription("select an item to sell from your inventory")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
@@ -66,7 +67,7 @@ module.exports = {
             collector.on('collect', async (interaction) => {
                 if (interaction.user.id !== message.author.id) {
                     return interaction.reply({
-                        content: "*this isn't your shop!*",
+                        content: "this isn't your shop",
                         ephemeral: true
                     });
                 }
@@ -76,7 +77,7 @@ module.exports = {
 
                 if (!item) {
                     return interaction.reply({
-                        content: "*this item is no longer available!*",
+                        content: "this item is no longer available",
                         ephemeral: true
                     });
                 }
@@ -91,8 +92,8 @@ module.exports = {
 
                 const sellEmbed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Shop`)
-                    .setDescription(`*you sold ${item.name} for ${sellPrice} <:patrickcoin:1371211412940132492>!*`)
+                    .setTitle(`${message.author.username}'s sell`)
+                    .setDescription(`*you sold ${item.name} for ${sellPrice} ${emojis.coin}*`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -101,8 +102,8 @@ module.exports = {
                 // Update the original message to remove the select menu
                 const updatedEmbed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Shop`)
-                    .setDescription("*shop closed!*")
+                    .setTitle(`${message.author.username}'s sell`)
+                    .setDescription("menu closed")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -114,8 +115,8 @@ module.exports = {
                 if (!response.deleted) {
                     const endEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Shop`)
-                        .setDescription("*shop closed!*")
+                        .setTitle(`${message.author.username}'s sell`)
+                        .setDescription("menu closed")
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();
 

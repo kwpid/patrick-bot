@@ -1,6 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUserData, getUserInventory, removeItemFromInventory, updateUserData, addItemToInventory } = require('../../utils/economyUtils');
 const chests = require('../../data/chests.json').chests;
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'open',
@@ -14,8 +15,8 @@ module.exports = {
             if (userChests.length === 0) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Chests`)
-                    .setDescription("you don't have any chests to open!")
+                    .setTitle(`${message.author.username}'s chests`)
+                    .setDescription("you don't have any chests to open")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -25,7 +26,7 @@ module.exports = {
             // Create embed showing available chests
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s Chests`)
+                .setTitle(`${message.author.username}'s chests`)
                 .setDescription(
                     userChests.map(chest => 
                         `<:${chest.name.toLowerCase().replace(/\s+/g, '_')}:${chest.emoji_id}> **${chest.name}** ─ ${chest.quantity}\n` +
@@ -43,7 +44,7 @@ module.exports = {
                         ...userChests.slice(i, i + 5).map(chest => 
                             new ButtonBuilder()
                                 .setCustomId(`open_${chest.item_id}`)
-                                .setLabel(`Open ${chest.name}`)
+                                .setLabel(`open ${chest.name}`)
                                 .setStyle(ButtonStyle.Secondary)
                         )
                     );
@@ -91,7 +92,7 @@ module.exports = {
                     if (reward.type === 'coins') {
                         const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
                         userData.balance += amount;
-                        rewards.push(`${amount} <:patrick_coin:1372197322120888452>`);
+                        rewards.push(`${amount} ${emojis.coin}`);
                     } else if (reward.type === 'item') {
                         for (const item of reward.items) {
                             if (Math.random() < item.chance) {
@@ -108,7 +109,7 @@ module.exports = {
                 // Create embed for rewards
                 const rewardEmbed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Chest`)
+                    .setTitle(`${message.author.username}'s chest`)
                     .setDescription(
                         `*you opened a ${chestData.name}!*\n\n` +
                         `*rewards:*\n${rewards.map(r => `• ${r}`).join('\n')}`
@@ -123,7 +124,7 @@ module.exports = {
                 if (updatedChests.length === 0) {
                     const emptyEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Chests`)
+                        .setTitle(`${message.author.username}'s chests`)
                         .setDescription("*you don't have any chests to open!*")
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();
@@ -132,7 +133,7 @@ module.exports = {
                 } else {
                     const updatedEmbed = new EmbedBuilder()
                         .setColor('#292929')
-                        .setTitle(`${message.author.username}'s Chests`)
+                        .setTitle(`${message.author.username}'s chests`)
                         .setDescription(
                             updatedChests.map(chest => 
                                 `<:${chest.name.toLowerCase().replace(/\s+/g, '_')}:${chest.emoji_id}> **${chest.name}** ─ ${chest.quantity}\n` +
@@ -149,7 +150,7 @@ module.exports = {
                                 ...updatedChests.slice(i, i + 5).map(chest => 
                                     new ButtonBuilder()
                                         .setCustomId(`open_${chest.item_id}`)
-                                        .setLabel(`Open ${chest.name}`)
+                                        .setLabel(`open ${chest.name}`)
                                         .setStyle(ButtonStyle.Secondary)
                                 )
                             );

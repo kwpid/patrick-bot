@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, getUserInventory, getUserJob, getJobRequirements, generateProgressBar, formatNumber } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'profile',
@@ -17,7 +18,7 @@ module.exports = {
                     `**level**\n\`${userData.level}\`\n\n` +
                     `**progress**\n\`${userData.xp}/${userData.nextLevelXp} XP\`\n` +
                     `${progressBar}\n\n` +
-                    `**balance**\n\`${formatNumber(userData.balance)}\` <:patrickcoin:1371211412940132492>\n\n` +
+                    `**balance**\n\`${formatNumber(userData.balance)}\` ${emojis.coin}\n\n` +
                     `**job**\n\`${userJob ? userJob.job_name : 'none'}\``
                 )
                 .setFooter({ text: 'patrick' })
