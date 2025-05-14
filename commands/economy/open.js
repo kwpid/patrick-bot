@@ -5,7 +5,16 @@ const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'open',
-    description: 'open a chest from your inventory',
+    description: 'open items from your inventory',
+    usage: 'pa open [item]',
+    aliases: ['unbox'],
+    args: [
+        {
+            name: 'item',
+            type: 'text',
+            description: 'the name of the item to open'
+        }
+    ],
     async execute(message, client) {
         try {
             // Get user's inventory and filter for chests
@@ -112,61 +121,28 @@ module.exports = {
                     .setTitle(`${message.author.username}'s chest`)
                     .setDescription(
                         `*you opened a ${chestData.name}!*\n\n` +
-                        `*rewards:*\n${rewards.map(r => `• ${r}`).join('\n')}`
+                        `**Rewards:**\n` +
+                        rewards.join('\n')
                     )
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
                 await interaction.reply({ embeds: [rewardEmbed] });
 
-                // Update the original message to remove the opened chest
-                const updatedChests = userChests.filter(c => c.item_id !== chestId);
-                if (updatedChests.length === 0) {
-                    const emptyEmbed = new EmbedBuilder()
-                        .setColor('#292929')
-                        .setTitle(`${message.author.username}'s chests`)
-                        .setDescription("*you don't have any chests to open!*")
-                        .setFooter({ text: 'patrick' })
-                        .setTimestamp();
+                // Update the original message to remove the buttons
+                const updatedEmbed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${message.author.username}'s chests`)
+                    .setDescription("menu closed")
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
 
-                    await response.edit({ embeds: [emptyEmbed], components: [] });
-                } else {
-                    const updatedEmbed = new EmbedBuilder()
-                        .setColor('#292929')
-                        .setTitle(`${message.author.username}'s chests`)
-                        .setDescription(
-                            updatedChests.map(chest => 
-                                `<:${chest.name.toLowerCase().replace(/\s+/g, '_')}:${chest.emoji_id}> **${chest.name}** ─ ${chest.quantity}\n` +
-                                `└ ${chest.description}`
-                            ).join('\n\n')
-                        )
-                        .setFooter({ text: 'patrick' })
-                        .setTimestamp();
-
-                    const updatedRows = [];
-                    for (let i = 0; i < updatedChests.length; i += 5) {
-                        const chestRow = new ActionRowBuilder()
-                            .addComponents(
-                                ...updatedChests.slice(i, i + 5).map(chest => 
-                                    new ButtonBuilder()
-                                        .setCustomId(`open_${chest.item_id}`)
-                                        .setLabel(`open ${chest.name}`)
-                                        .setStyle(ButtonStyle.Secondary)
-                                )
-                            );
-                        updatedRows.push(chestRow);
-                    }
-
-                    await response.edit({ embeds: [updatedEmbed], components: updatedRows });
-                }
-            });
-
-            collector.on('end', () => {
-                response.edit({ components: [] }).catch(() => {});
+                await response.edit({ embeds: [updatedEmbed], components: [] });
+                collector.stop();
             });
         } catch (error) {
             console.error('Error in open command:', error);
-            message.reply("*something went wrong while opening the chest!*").catch(() => {});
+            message.reply('An error occurred while processing the command.');
         }
     }
-}; 
+};

@@ -5,7 +5,21 @@ const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'sell',
-    description: 'sell an item from your inventory',
+    description: 'sell items from your inventory',
+    usage: 'pa sell [item] [quantity]',
+    aliases: ['vendor'],
+    args: [
+        {
+            name: 'item',
+            type: 'text',
+            description: 'the name of the item to sell'
+        },
+        {
+            name: 'quantity',
+            type: 'number',
+            description: 'how many of the item to sell (defaults to 1)'
+        }
+    ],
     async execute(message, client) {
         try {
             const userData = await getUserData(message.author.id);

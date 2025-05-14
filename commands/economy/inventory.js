@@ -5,8 +5,16 @@ const ITEMS_PER_PAGE = 9;
 
 module.exports = {
     name: 'inventory',
-    description: 'shows your inventory',
-    aliases: ['inv'],
+    description: 'view your or another user\'s inventory',
+    usage: 'pa inventory [user]',
+    aliases: ['inv', 'items'],
+    args: [
+        {
+            name: 'user',
+            type: 'user',
+            description: 'the user to check inventory of (defaults to yourself)'
+        }
+    ],
     async execute(message, client) {
         const items = await getUserInventory(message.author.id);
         

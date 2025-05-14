@@ -5,6 +5,15 @@ const emojis = require ('../../data/emojis.json')
 module.exports = {
     name: 'apply',
     description: 'apply for a job',
+    usage: 'pa apply [job_id]',
+    aliases: ['job'],
+    args: [
+        {
+            name: 'job_id',
+            type: 'text',
+            description: 'the ID of the job you want to apply for (use pa jobs to see available jobs)'
+        }
+    ],
     async execute(message, client) {
         try {
             const args = message.content.split(' ');

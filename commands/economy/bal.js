@@ -4,7 +4,16 @@ const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'bal',
-    description: 'check your balance',
+    description: 'check your or another user\'s balance',
+    usage: 'pa bal [user]',
+    aliases: ['balance', 'money'],
+    args: [
+        {
+            name: 'user',
+            type: 'user',
+            description: 'the user to check balance of (defaults to yourself)'
+        }
+    ],
     async execute(message, client) {
         try {
             const userData = await getUserData(message.author.id);
