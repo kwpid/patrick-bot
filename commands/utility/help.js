@@ -83,12 +83,12 @@ module.exports = {
                             
                             // Add usage if available
                             if (cmd.usage) {
-                                fieldValue += `\n└ Usage: \`${cmd.usage}\``;
+                                fieldValue += `\n├ Usage: \`${cmd.usage}\``;
                             }
 
                             // Add arguments if available
                             if (cmd.args && cmd.args.length > 0) {
-                                fieldValue += '\n└ Arguments:';
+                                fieldValue += '\n├ Arguments:';
                                 cmd.args.forEach(arg => {
                                     fieldValue += `\n  ├ \`${arg.name}\` (${arg.type}) - ${arg.description}`;
                                 });
