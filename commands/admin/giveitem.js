@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, addItemToInventory } = require('../../utils/economyUtils');
-const { shopItems } = require('../../data/shopItems.json');
+const shopItems = require('../../data/shopItems.json');
 const { chests } = require('../../data/chests.json');
 const emojis = require('../../data/emojis.json');
 
@@ -55,11 +55,11 @@ module.exports = {
             }
 
             // Check if item exists in shop or chests
-            const shopItem = shopItems.find(item => item.id === itemId);
+            const shopItem = shopItems.items.find(item => item.id === itemId);
             const chestItem = chests[itemId];
 
             if (!shopItem && !chestItem) {
-                return message.reply("*invalid item ID!*");
+                return message.reply("*invalid item ID! Use `pa shop` to see valid item IDs.*");
             }
 
             // Get user data
@@ -73,12 +73,15 @@ module.exports = {
                 await addItemToInventory(user.id, itemId);
             }
 
+            // Get item name for display
+            const itemName = shopItem ? shopItem.name : chestItem.name;
+
             // Create success embed
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('Item Given')
                 .setDescription(
-                    `Successfully gave ${quantity}x ${itemId} to ${user.username}`
+                    `Successfully gave ${quantity}x ${itemName} to ${user.username}`
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
