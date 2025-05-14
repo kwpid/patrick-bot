@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, formatNumber } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'bal',
@@ -11,7 +12,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('patrick\'s balance')
-                .setDescription(`${formatNumber(userData.balance)} <:patrick_coin:1372197322120888452>`)
+                .setDescription(`${formatNumber(userData.balance)} ${emojis.coin}`)
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 

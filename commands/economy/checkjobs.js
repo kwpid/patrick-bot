@@ -8,7 +8,7 @@ module.exports = {
         try {
             // Check if user is admin
             if (!message.member.permissions.has('Administrator')) {
-                return message.reply("*you don't have permission to use this command!*");
+                return message.reply("you don't have permission to use this command!");
             }
 
             // Get all jobs from the table
@@ -22,7 +22,7 @@ module.exports = {
                         `**${job.job_name}**\n` +
                         `├ ID: \`${job.job_id}\`\n` +
                         `├ Level Required: ${job.required_level}\n` +
-                        `└ Salary: ${job.salary} <:patrickcoin:1371211412940132492>`
+                        `└ Salary: ${job.salary} <:patrick_coin:1372197322120888452>`
                     ).join('\n\n')
                 )
                 .setFooter({ text: 'patrick' })

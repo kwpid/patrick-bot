@@ -14,7 +14,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s Items`)
-                .setDescription("*your inventory is empty*")
+                .setDescription("your inventory is empty")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             
@@ -74,7 +74,7 @@ module.exports = {
             collector.on('collect', async (interaction) => {
                 if (interaction.user.id !== message.author.id) {
                     return interaction.reply({
-                        content: "*this isn't your inventory!*",
+                        content: "this isn't your inventory",
                         ephemeral: true
                     });
                 }

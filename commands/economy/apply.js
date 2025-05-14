@@ -55,7 +55,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s Jobs`)
-                    .setDescription(`you are now working as a ${jobReq.job_name}!\nyou will earn ${jobReq.salary} <:patrickcoin:1371211412940132492> per shift`)
+                    .setDescription(`you are now working as a ${jobReq.job_name}!\nyou will earn ${jobReq.salary} <:patrick_coin:1372197322120888452> per shift`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 

@@ -15,7 +15,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s Chests`)
-                    .setDescription("*you don't have any chests to open!*")
+                    .setDescription("you don't have any chests to open!")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -63,7 +63,7 @@ module.exports = {
             collector.on('collect', async (interaction) => {
                 if (interaction.user.id !== message.author.id) {
                     return interaction.reply({
-                        content: "*this isn't your chest menu!*",
+                        content: "this isn't your chest menu!",
                         ephemeral: true
                     });
                 }
@@ -73,7 +73,7 @@ module.exports = {
                 
                 if (!chest) {
                     return interaction.reply({
-                        content: "*that chest is no longer available!*",
+                        content: "that chest is no longer available!",
                         ephemeral: true
                     });
                 }
@@ -91,7 +91,7 @@ module.exports = {
                     if (reward.type === 'coins') {
                         const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
                         userData.balance += amount;
-                        rewards.push(`${amount} <:patrickcoin:1371211412940132492>`);
+                        rewards.push(`${amount} <:patrick_coin:1372197322120888452>`);
                     } else if (reward.type === 'item') {
                         for (const item of reward.items) {
                             if (Math.random() < item.chance) {

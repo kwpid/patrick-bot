@@ -2,9 +2,9 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { getAllJobs, getUserData, getUserJob, formatNumber } = require('../../utils/economyUtils');
 const { getJobRequirements } = require('../../utils/economyUtils');
 
-const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
-const CHECKMARK = '<:checkmark:1371506056177516586>';
-const FAIL = '<:fail:1371506033431810139>';
+const PATRICK_COIN = '<:patrick_coin:1372197322120888452>';
+const CHECKMARK = '<:checkmark:1372199395289862196>';
+const FAIL = '<:fail:1372199526449938492>';
 const JOBS_PER_PAGE = 5;
 
 module.exports = {
@@ -15,7 +15,7 @@ module.exports = {
         try {
             const jobs = await getAllJobs();
             if (!jobs || jobs.length === 0) {
-                return message.reply("*no jobs are available right now!*");
+                return message.reply("no jobs are available right now");
             }
 
             const totalPages = Math.ceil(jobs.length / JOBS_PER_PAGE);
@@ -101,7 +101,7 @@ module.exports = {
             collector.on('collect', async (interaction) => {
                 if (interaction.user.id !== message.author.id) {
                     return interaction.reply({
-                        content: "*this isn't your jobs menu!*",
+                        content: "this isn't your jobs menu!",
                         ephemeral: true
                     });
                 }
