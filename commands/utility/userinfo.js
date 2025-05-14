@@ -4,7 +4,7 @@ module.exports = {
     name: 'userinfo',
     description: 'tells you about a user',
     usage: 'pa userinfo [user]',
-    aliases: ['whois', 'user'],
+    aliases: ['ui', 'user'],
     args: [
         {
             name: 'user',
