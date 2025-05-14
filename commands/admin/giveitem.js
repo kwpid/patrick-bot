@@ -69,8 +69,9 @@ module.exports = {
             }
 
             // Add item to inventory
-            for (let i = 0; i < quantity; i++) {
-                await addItemToInventory(user.id, itemId);
+            const success = await addItemToInventory(user.id, itemId, quantity);
+            if (!success) {
+                return message.reply("*failed to add item to inventory!*");
             }
 
             // Get item name for display
