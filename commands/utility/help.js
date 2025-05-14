@@ -22,6 +22,15 @@ const categories = {
     }
 };
 
+// Define argument types and their descriptions
+const argumentTypes = {
+    user: 'mention a user',
+    text: 'text input',
+    number: 'a number',
+    time: 'time duration (e.g., 1m, 2h, 3d)',
+    option: 'one of the available options'
+};
+
 module.exports = {
     name: 'help',
     description: 'shows all available commands',
@@ -42,7 +51,10 @@ module.exports = {
                             commands.push({
                                 name: command.name,
                                 description: command.description || 'No description available',
-                                category: folder
+                                category: folder,
+                                usage: command.usage || '',
+                                args: command.args || [],
+                                aliases: command.aliases || []
                             });
                         }
                     }
@@ -66,7 +78,26 @@ module.exports = {
                         .setDescription(categoryInfo.description + '\n\n' +
                             categorizedCommands[category]
                                 .sort((a, b) => a.name.localeCompare(b.name))
-                                .map(cmd => `**${cmd.name}**\n└ ${cmd.description}`)
+                                .map(cmd => {
+                                    let commandInfo = `**${cmd.name}**`;
+                                    if (cmd.aliases.length > 0) {
+                                        commandInfo += ` (aliases: ${cmd.aliases.join(', ')})`;
+                                    }
+                                    commandInfo += `\n└ ${cmd.description}`;
+                                    
+                                    if (cmd.usage) {
+                                        commandInfo += `\n└ Usage: \`${cmd.usage}\``;
+                                    }
+                                    
+                                    if (cmd.args && cmd.args.length > 0) {
+                                        commandInfo += '\n└ Arguments:';
+                                        cmd.args.forEach(arg => {
+                                            commandInfo += `\n  • ${arg.name} (${arg.type}) - ${arg.description}`;
+                                        });
+                                    }
+                                    
+                                    return commandInfo;
+                                })
                                 .join('\n\n')
                         )
                         .setFooter({ 
