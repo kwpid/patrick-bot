@@ -12,7 +12,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s active effects`)
-                    .setDescription("*you don't have any active effects right now!*")
+                    .setDescription("you don't have any active effects right now!")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -49,7 +49,7 @@ module.exports = {
             message.reply({ embeds: [embed] });
         } catch (error) {
             console.error('Error in active command:', error);
-            message.reply("*something went wrong, try again later!*").catch(() => {});
+            message.reply("something went wrong, try again later!").catch(() => {});
         }
     }
 }; 

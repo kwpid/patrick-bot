@@ -11,7 +11,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('patrick\'s balance')
-                .setDescription(`*${formatNumber(userData.balance)} <:patrickcoin:1371211412940132492>*`)
+                .setDescription(`${formatNumber(userData.balance)} <:patrick_coin:1372197322120888452>`)
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
