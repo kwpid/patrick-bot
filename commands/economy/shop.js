@@ -13,8 +13,21 @@ function shouldResetShop() {
 
 module.exports = {
     name: 'shop',
-    description: 'shows the shop with daily items',
-    aliases: ['s'],
+    description: 'view and buy items from the shop',
+    usage: 'pa shop [category/item]',
+    aliases: ['store', 'buy'],
+    args: [
+        {
+            name: 'category',
+            type: 'option',
+            description: 'the category of items to view (optional)'
+        },
+        {
+            name: 'item',
+            type: 'text',
+            description: 'the name of the item to buy (optional)'
+        }
+    ],
     async execute(message, client) {
         try {
             if (message.content.toLowerCase().includes('refresh')) {
@@ -105,7 +118,7 @@ module.exports = {
                         .addComponents(
                             ...shopItems.slice(i, i + 5).map((item, index) => 
                                 new ButtonBuilder()
-                                    .setCustomId(`buy_${i + index}`)
+                                    .setCustomId(`buy_${item.item_id}`)
                                     .setLabel(`buy ${item.name}`)
                                     .setStyle(ButtonStyle.Secondary)
                             )
@@ -113,131 +126,37 @@ module.exports = {
                     rows.push(itemRow);
                 }
 
-                try {
-                    // Add a close button to the last row
-                    const closeButton = new ButtonBuilder()
-                        .setCustomId('close_shop')
-                        .setLabel('close shop menu')
-                        .setStyle(ButtonStyle.Danger);
+                const embed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${emojis.shop} patrick's shop`)
+                    .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
+                    .setDescription(
+                        shopItems.map(item => {
+                            // Special case for Devil's Pitchfork
+                            const emojiName = item.id === 'devilpitchfork' ? 'devils_pitchfork' : item.id;
+                            let itemDisplay = `<:${emojiName}:${item.emoji_id}> **${item.name}**\n`;
+                            itemDisplay += `├ Price: ${formatNumber(item.price)} ${emojis.coin}\n`;
+                            itemDisplay += `├ Description: ${item.description}\n`;
+                            itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
+                            return itemDisplay;
+                        }).join('\n\n')
+                    )
+                    .setFooter({ text: 'patrick • resets at 12 PM EST' })
+                    .setTimestamp();
 
-                    // Add close button to the last row if there's space, otherwise create a new row
-                    if (rows[rows.length - 1].components.length < 5) {
-                        rows[rows.length - 1].addComponents(closeButton);
-                    } else {
-                        rows.push(new ActionRowBuilder().addComponents(closeButton));
-                    }
+                const row = new ActionRowBuilder()
+                    .addComponents(
+                        ...rows
+                    );
 
-                    await interaction.reply({
-                        content: "which item would you like to buy?",
-                        components: rows,
-                        ephemeral: true
-                    });
-
-                    const itemCollector = interaction.channel.createMessageComponentCollector({
-                        time: 300000 // 5 minutes timeout
-                    });
-
-                    itemCollector.on('collect', async (itemInteraction) => {
-                        if (itemInteraction.user.id !== message.author.id) {
-                            return itemInteraction.reply({
-                                content: "this isn't your shop!",
-                                ephemeral: true
-                            });
-                        }
-
-                        // Handle close button
-                        if (itemInteraction.customId === 'close_shop') {
-                            await itemInteraction.update({
-                                content: "shop menu closed",
-                                components: []
-                            });
-                            itemCollector.stop();
-                            return;
-                        }
-
-                        const itemIndex = parseInt(itemInteraction.customId.split('_')[1]);
-                        const item = shopItems[itemIndex];
-
-                        if (!item) {
-                            return itemInteraction.reply({
-                                content: "this item is no longer available",
-                                ephemeral: true
-                            });
-                        }
-
-                        if (userData.balance < item.price) {
-                            return itemInteraction.reply({
-                                content: "you don't have enough patrick coins",
-                                ephemeral: true
-                            });
-                        }
-
-                        try {
-                            // Update user balance
-                            userData.balance -= item.price;
-                            await updateUserData(message.author.id, userData);
-
-                            // Add item to inventory
-                            const success = await addItemToInventory(message.author.id, item.item_id);
-                            
-                            if (success) {
-                                await itemInteraction.reply({
-                                    content: `you bought ${item.name} for ${formatNumber(item.price)} ${emojis.coin}`,
-                                    ephemeral: true
-                                });
-                            } else {
-                                // Refund if adding to inventory fails
-                                userData.balance += item.price;
-                                await updateUserData(message.author.id, userData);
-                                throw new Error('Failed to add item to inventory');
-                            }
-                        } catch (error) {
-                            console.error('Error adding item to inventory:', error);
-                            try {
-                                await itemInteraction.reply({
-                                    content: "*something went wrong while buying the item!*",
-                                    ephemeral: true
-                                });
-                            } catch (replyError) {
-                                console.error('Error sending error message:', replyError);
-                            }
-                        }
-                    });
-
-                    itemCollector.on('end', () => {
-                        try {
-                            interaction.editReply({
-                                content: "*shop closed!*",
-                                components: []
-                            }).catch(() => {});
-                        } catch (error) {
-                            console.error('Error closing shop:', error);
-                        }
-                    });
-                } catch (error) {
-                    console.error('Error handling buy interaction:', error);
-                    try {
-                        await interaction.reply({
-                            content: "*something went wrong, try again later!*",
-                            ephemeral: true
-                        });
-                    } catch (replyError) {
-                        console.error('Error sending error message:', replyError);
-                    }
-                }
-            });
-
-            collector.on('end', () => {
-                try {
-                    row.components.forEach(button => button.setDisabled(true));
-                    response.edit({ components: [row] }).catch(() => {});
-                } catch (error) {
-                    console.error('Error disabling shop buttons:', error);
-                }
+                const response = await message.reply({
+                    embeds: [embed],
+                    components: [row]
+                });
             });
         } catch (error) {
-            console.error('Error in shop command:', error);
-            message.reply("*something went wrong, try again later!*").catch(() => {});
+            console.error('Error executing shop command:', error);
+            return message.reply('An error occurred while executing the shop command.');
         }
     }
-}; 
+}

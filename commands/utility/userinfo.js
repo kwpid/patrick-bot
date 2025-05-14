@@ -3,6 +3,15 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = {
     name: 'userinfo',
     description: 'tells you about a user',
+    usage: 'pa userinfo [user]',
+    aliases: ['whois', 'user'],
+    args: [
+        {
+            name: 'user',
+            type: 'user',
+            description: 'the user to get information about (defaults to yourself)'
+        }
+    ],
     execute(message, client) {
         const args = message.content.slice(10).trim();
         const target = message.mentions.users.first() || 

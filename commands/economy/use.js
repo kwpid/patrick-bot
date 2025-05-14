@@ -5,6 +5,15 @@ const emojis = require ('../../data/emojis.json')
 module.exports = {
     name: 'use',
     description: 'use an item from your inventory',
+    usage: 'pa use',
+    aliases: ['consume'],
+    args: [
+        {
+            name: 'item',
+            type: 'option',
+            description: 'select an item from your inventory to use'
+        }
+    ],
     async execute(message, client) {
         try {
             const usableItems = await getUsableItems(message.author.id);

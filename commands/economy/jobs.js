@@ -7,8 +7,16 @@ const JOBS_PER_PAGE = 5;
 
 module.exports = {
     name: 'jobs',
-    description: 'view all available jobs',
-    aliases: ['joblist'],
+    description: 'view available jobs',
+    usage: 'pa jobs [category]',
+    aliases: ['work'],
+    args: [
+        {
+            name: 'category',
+            type: 'option',
+            description: 'filter jobs by category (optional)'
+        }
+    ],
     async execute(message, client) {
         try {
             const jobs = await getAllJobs();
