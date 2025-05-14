@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, getUserJob, updateUserData, getJobRequirements, setUserJob } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'apply',
@@ -55,7 +56,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s Jobs`)
-                    .setDescription(`you are now working as a ${jobReq.job_name}!\nyou will earn ${jobReq.salary} <:patrick_coin:1372197322120888452> per shift`)
+                    .setDescription(`you are now working as a ${jobReq.job_name}!\nyou will earn ${jobReq.salary} ${emojis.coin} per shift`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 

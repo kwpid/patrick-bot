@@ -49,7 +49,7 @@ module.exports = {
     execute(message, client) {
         const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
         const embed = new EmbedBuilder()
-            .setColor('#292929') // light pink for patrick
+            .setColor('#292929') 
             .setTitle("patrick's joke")
             .setDescription(`${randomJoke.setup}\n\n${randomJoke.punchline}`)
             .setFooter({ text: 'patrick star' })

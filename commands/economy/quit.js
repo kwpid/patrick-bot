@@ -14,8 +14,8 @@ module.exports = {
             if (!userJob) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Jobs`)
-                    .setDescription("*you don't have a job to quit! use `pa jobs` to see available jobs.*")
+                    .setTitle(`${message.author.username}'s jobs`)
+                    .setDescription("you don't have a job to quit! use `pa jobs` to see available jobs")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -28,18 +28,18 @@ module.exports = {
             if (success) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
-                    .setTitle(`${message.author.username}'s Jobs`)
-                    .setDescription("*you have quit your job! use `pa jobs` to see available jobs.*")
+                    .setTitle(`${message.author.username}'s jobs`)
+                    .setDescription("you have quit your job! use `pa jobs` to see available jobs")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
                 message.reply({ embeds: [embed] });
             } else {
-                message.reply("*something went wrong while quitting your job!*");
+                message.reply("something went wrong while quitting your job");
             }
         } catch (error) {
             console.error('Error in quit command:', error);
-            message.reply("*something went wrong, try again later!*").catch(() => {});
+            message.reply("something went wrong, try again later*").catch(() => {});
         }
     }
 };

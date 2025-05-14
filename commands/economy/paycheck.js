@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, getUserJob, updateUserData, getJobRequirements } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
 // Cooldown map to track user cooldowns
 const cooldowns = new Map();
@@ -19,7 +20,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s paycheck`)
-                    .setDescription(`*you need to wait ${timeLeft} more minutes before getting another paycheck!*`)
+                    .setDescription(`you need to wait ${timeLeft} more minutes before getting another paycheck`)
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
                 
@@ -31,7 +32,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s paycheck`)
-                    .setDescription("*you don't have an account yet!*")
+                    .setDescription("you don't have an account yet!")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
                 
@@ -49,7 +50,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s paycheck`)
-                .setDescription(`*here's your paycheck of ${amount} <:patrickcoin:1371211412940132492>!*`)
+                .setDescription(`here's your paycheck of ${amount} ${emojis.coin}`)
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
@@ -59,7 +60,7 @@ module.exports = {
             const errorEmbed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s paycheck`)
-                .setDescription("*something went wrong, try again later!*")
+                .setDescription("something went wrong, try again later!")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             

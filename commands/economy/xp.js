@@ -13,9 +13,9 @@ module.exports = {
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s xp`)
                 .setDescription(
-                    `*level ${userData.level}*\n` +
+                    `level ${userData.level}\n` +
                     `${progressBar}\n` +
-                    `*${formatNumber(userData.xp)}/${formatNumber(userData.nextLevelXp)} XP*`
+                    `${formatNumber(userData.xp)}/${formatNumber(userData.nextLevelXp)} xp`
                 )
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();

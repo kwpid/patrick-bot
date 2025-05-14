@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'ss',
-    description: 'Shows server statistics (members, bots, etc.)',
+    description: 'shows server statistics (members, bots, etc.)',
     execute(message, client) {
         const guild = message.guild;
         const totalMembers = guild.memberCount;
@@ -11,11 +11,11 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor('#292929')
-            .setTitle(`Server Stats for ${guild.name}`)
+            .setTitle(`server stats for ${guild.name}`)
             .addFields(
-                { name: 'Total Members', value: totalMembers.toString(), inline: true },
-                { name: 'Real Members', value: realMembers.toString(), inline: true },
-                { name: 'Bots', value: botCount.toString(), inline: true }
+                { name: 'total members', value: totalMembers.toString(), inline: true },
+                { name: 'real members', value: realMembers.toString(), inline: true },
+                { name: 'bots', value: botCount.toString(), inline: true }
             )
             .setTimestamp();
 

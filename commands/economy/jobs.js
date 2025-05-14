@@ -1,10 +1,8 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getAllJobs, getUserData, getUserJob, formatNumber } = require('../../utils/economyUtils');
 const { getJobRequirements } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
-const PATRICK_COIN = '<:patrick_coin:1372197322120888452>';
-const CHECKMARK = '<:checkmark:1372199395289862196>';
-const FAIL = '<:fail:1372199526449938492>';
 const JOBS_PER_PAGE = 5;
 
 module.exports = {
@@ -34,27 +32,26 @@ module.exports = {
                     .setTitle(`${message.author.username}'s Jobs`)
                     .setDescription(
                         pageJobs.map(job => {
-                            // Determine if job is available based on level
                             const isAvailable = userData.level >= job.required_level;
-                            const emoji = isAvailable ? CHECKMARK : FAIL;
-                            
+                            const emoji = isAvailable ? emojis.checkmark : emojis.fail;
+                    
                             let jobDisplay = `${emoji} **${job.job_name}**\n`;
-                            jobDisplay += `├ Salary: ${formatNumber(job.salary)} ${PATRICK_COIN} per shift\n`;
+                            jobDisplay += `├ Salary: ${formatNumber(job.salary)} ${emojis.coin} per shift\n`;
                             jobDisplay += `├ Required Level: ${job.required_level}\n`;
                             jobDisplay += `├ Minimum Shifts: ${job.min_shifts} per day\n`;
                             jobDisplay += `└ ID: \`${job.job_id}\``;
-                            
-                            // Add indicator for current job
+                    
                             if (userJob && userJob.job_name === job.job_name) {
                                 jobDisplay += ' *(current job)*';
                             }
-                            
+                    
                             return jobDisplay;
                         }).join('\n\n')
                     )
                     .setFooter({ 
-                        text: `Page ${currentPage + 1}/${totalPages} • patrick • ${CHECKMARK} = Available • ${FAIL} = Locked` 
+                        text: `Page ${currentPage + 1}/${totalPages} • patrick • ${emojis.checkmark} = Available • ${emojis.fail} = Locked` 
                     })
+                    
                     .setTimestamp();
 
                 return embed;

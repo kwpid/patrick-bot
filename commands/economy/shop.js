@@ -1,9 +1,8 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUserData, getUserInventory, updateUserData, getShopItems, addItemToInventory, formatNumber, updateShopItems } = require('../../utils/economyUtils');
 const { shopItems } = require('../../data/shopItems.json');
+const emojis = require ('../../data/emojis.json')
 
-const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
-const SHOP_EMOJI = '<:shop:1371495749124100186>';
 
 // Function to check if shop needs to be reset (12 PM EST)
 function shouldResetShop() {
@@ -18,14 +17,10 @@ module.exports = {
     aliases: ['s'],
     async execute(message, client) {
         try {
-            // Check if user is admin and wants to refresh shop
             if (message.content.toLowerCase().includes('refresh')) {
-                // Check if command is used in a guild
                 if (!message.guild) {
                     return message.reply("*this command can only be used in a server!*");
                 }
-
-                // Get member with permissions
                 const member = message.member || await message.guild.members.fetch(message.author.id);
                 if (!member) {
                     return message.reply("*couldn't fetch your member data!*");
@@ -36,7 +31,7 @@ module.exports = {
                 }
 
                 await updateShopItems();
-                return message.reply("*shop has been refreshed!*");
+                return message.reply("shop has been refreshed");
             }
 
             let shopItems = await getShopItems();
@@ -49,19 +44,19 @@ module.exports = {
 
             // If still no items, show error message
             if (!shopItems || shopItems.length === 0) {
-                return message.reply("*the shop is empty right now, check back later!*");
+                return message.reply("the shop is empty right now, check back later");
             }
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${SHOP_EMOJI} patrick's shop`)
+                .setTitle(`${emojis.shop} patrick's shop`)
                 .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
                 .setDescription(
                     shopItems.map(item => {
                         // Special case for Devil's Pitchfork
                         const emojiName = item.id === 'devilpitchfork' ? 'devils_pitchfork' : item.id;
                         let itemDisplay = `<:${emojiName}:${item.emoji_id}> **${item.name}**\n`;
-                        itemDisplay += `├ Price: ${formatNumber(item.price)} ${PATRICK_COIN}\n`;
+                        itemDisplay += `├ Price: ${formatNumber(item.price)} ${emojis.coin}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
                         return itemDisplay;
@@ -74,7 +69,7 @@ module.exports = {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId('buy')
-                        .setLabel('Buy Item')
+                        .setLabel('buy an item')
                         .setStyle(ButtonStyle.Primary)
                 );
 
@@ -90,7 +85,7 @@ module.exports = {
             collector.on('collect', async (interaction) => {
                 if (interaction.user.id !== message.author.id) {
                     return interaction.reply({
-                        content: "*this isn't your shop!*",
+                        content: "this isn't your shop",
                         ephemeral: true
                     });
                 }
@@ -98,7 +93,7 @@ module.exports = {
                 const userData = await getUserData(message.author.id);
                 if (!userData) {
                     return interaction.reply({
-                        content: "*you don't have an account yet!*",
+                        content: "you don't have an account yet",
                         ephemeral: true
                     });
                 }
@@ -111,7 +106,7 @@ module.exports = {
                             ...shopItems.slice(i, i + 5).map((item, index) => 
                                 new ButtonBuilder()
                                     .setCustomId(`buy_${i + index}`)
-                                    .setLabel(`Buy ${item.name}`)
+                                    .setLabel(`buy ${item.name}`)
                                     .setStyle(ButtonStyle.Secondary)
                             )
                         );
@@ -122,7 +117,7 @@ module.exports = {
                     // Add a close button to the last row
                     const closeButton = new ButtonBuilder()
                         .setCustomId('close_shop')
-                        .setLabel('Close Shop')
+                        .setLabel('close shop menu')
                         .setStyle(ButtonStyle.Danger);
 
                     // Add close button to the last row if there's space, otherwise create a new row
@@ -133,7 +128,7 @@ module.exports = {
                     }
 
                     await interaction.reply({
-                        content: "*which item would you like to buy?*",
+                        content: "which item would you like to buy?",
                         components: rows,
                         ephemeral: true
                     });
@@ -145,7 +140,7 @@ module.exports = {
                     itemCollector.on('collect', async (itemInteraction) => {
                         if (itemInteraction.user.id !== message.author.id) {
                             return itemInteraction.reply({
-                                content: "*this isn't your shop!*",
+                                content: "this isn't your shop!",
                                 ephemeral: true
                             });
                         }
@@ -153,7 +148,7 @@ module.exports = {
                         // Handle close button
                         if (itemInteraction.customId === 'close_shop') {
                             await itemInteraction.update({
-                                content: "*shop closed!*",
+                                content: "shop menu closed",
                                 components: []
                             });
                             itemCollector.stop();
@@ -165,14 +160,14 @@ module.exports = {
 
                         if (!item) {
                             return itemInteraction.reply({
-                                content: "*this item is no longer available!*",
+                                content: "this item is no longer available",
                                 ephemeral: true
                             });
                         }
 
                         if (userData.balance < item.price) {
                             return itemInteraction.reply({
-                                content: "*you don't have enough coins!*",
+                                content: "you don't have enough patrick coins",
                                 ephemeral: true
                             });
                         }
@@ -187,7 +182,7 @@ module.exports = {
                             
                             if (success) {
                                 await itemInteraction.reply({
-                                    content: `*you bought ${item.name} for ${formatNumber(item.price)} ${PATRICK_COIN}!*`,
+                                    content: `you bought ${item.name} for ${formatNumber(item.price)} ${emojis.coin}`,
                                     ephemeral: true
                                 });
                             } else {
