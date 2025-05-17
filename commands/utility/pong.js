@@ -6,10 +6,10 @@ module.exports = {
     execute(message, client) {
         const ping = client.ws.ping;
         const embed = new EmbedBuilder()
-            .setColor('#FFB6C1')
-            .setTitle('🏓 Pong!')
-            .setDescription(`My response time is **${ping}ms**`)
-            .setFooter({ text: 'Patrick Bot' })
+            .setColor('#292929')
+            .setTitle('🏓 pong!')
+            .setDescription(`my response time is **${ping}ms**`)
+            .setFooter({ text: 'patrick' })
             .setTimestamp();
 
         message.reply({ embeds: [embed] });

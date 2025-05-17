@@ -1,0 +1,43 @@
+{
+    "chests": {
+        "chest_1": {
+            "name": "Basic Chest",
+            "description": "A basic chest that might contain some goodies!",
+            "rewards": [
+                {
+                    "type": "coins",
+                    "min": 100,
+                    "max": 500
+                },
+                {
+                    "type": "item",
+                    "items": [
+                        {"id": "beer", "chance": 0.3},
+                        {"id": "burger", "chance": 0.3},
+                        {"id": "galaxy_sword", "chance": 0.1}
+                    ]
+                }
+            ]
+        },
+        "chest_2": {
+            "name": "Rare Chest",
+            "description": "A rare chest with better rewards!",
+            "rewards": [
+                {
+                    "type": "coins",
+                    "min": 500,
+                    "max": 1000
+                },
+                {
+                    "type": "item",
+                    "items": [
+                        {"id": "krabby_patty", "chance": 0.4},
+                        {"id": "kelp_shake", "chance": 0.4},
+                        {"id": "fry_basket", "chance": 0.3},
+                        {"id": "jellyfish_net", "chance": 0.2}
+                    ]
+                }
+            ]
+        }
+    }
+} 

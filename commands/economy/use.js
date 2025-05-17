@@ -94,7 +94,7 @@ module.exports = {
                     const errorEmbed = new EmbedBuilder()
                         .setColor('#292929')
                         .setTitle(`${message.author.username}'s item use`)
-                        .setDescription(`*${result.error}*`)
+                        .setDescription(`*${result.message}*`)
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();
 

@@ -744,6 +744,25 @@ async function getShopItems() {
 
 async function updateShopItems() {
     try {
+        // Get current time in EST
+        const now = new Date();
+        const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        
+        // Check if it's 12 PM EST
+        const isNoon = est.getHours() === 12 && est.getMinutes() === 0;
+        
+        // Get last shop update time
+        const lastUpdateResult = await pool.query(
+            'SELECT last_updated FROM shop WHERE on_sale = true ORDER BY last_updated DESC LIMIT 1'
+        );
+        
+        const lastUpdate = lastUpdateResult.rows[0]?.last_updated;
+        const shouldUpdate = !lastUpdate || isNoon;
+        
+        if (!shouldUpdate) {
+            return true; // Don't update if it's not time yet
+        }
+
         // Read shop items from JSON file
         const shopItems = require('../data/shopItems.json').items.filter(item => item.type !== 'chest');
         
@@ -761,8 +780,8 @@ async function updateShopItems() {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
-                    tags, value, type, on_sale
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    tags, value, type, on_sale, last_updated
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
                 ON CONFLICT (item_id) 
                 DO UPDATE SET 
                     name = EXCLUDED.name,
@@ -800,8 +819,8 @@ async function updateShopItems() {
                 await pool.query(
                     `INSERT INTO shop (
                         item_id, name, description, price, emoji_id, 
-                        tags, value, type, on_sale
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                        tags, value, type, on_sale, last_updated
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
                     ON CONFLICT DO NOTHING`,
                     [
                         item.id,
@@ -818,6 +837,7 @@ async function updateShopItems() {
             }
         }
 
+        console.log('Shop items updated successfully');
         return true;
     } catch (error) {
         console.error('Error updating shop items:', error);
@@ -1360,13 +1380,22 @@ async function useItem(userId, itemId) {
 
         // Check if user already has an active effect from this item
         const existingEffect = await pool.query(
-            `SELECT * FROM active_effects 
-             WHERE user_id = $1 AND item_id = $2 AND expires_at > CURRENT_TIMESTAMP`,
+            `SELECT ae.*, s.name as item_name 
+             FROM active_effects ae
+             JOIN shop s ON ae.item_id = s.item_id
+             WHERE ae.user_id = $1 
+             AND ae.item_id = $2 
+             AND ae.expires_at > CURRENT_TIMESTAMP`,
             [userId, itemId]
         );
 
         if (existingEffect.rows.length > 0) {
-            return { success: false, message: `You already have an active effect from ${item.name}!` };
+            const effect = existingEffect.rows[0];
+            const timeLeft = Math.ceil((new Date(effect.expires_at) - Date.now()) / 1000 / 60);
+            return { 
+                success: false, 
+                message: `You already have an active effect from ${effect.item_name}! (${timeLeft} minutes remaining)`
+            };
         }
 
         // Add active effect
@@ -1388,7 +1417,7 @@ async function useItem(userId, itemId) {
 
         return { 
             success: true, 
-            message: `Used ${item.name}! Effect: +${Math.round((item.effect_value - 1) * 100)}% XP for ${item.effect_duration / 60} minutes.`,
+            message: `Used ${item.name}! Effect: +${Math.round((item.effect_value - 1) * 100)}% ${item.effect_type === 'xp_boost' ? 'XP' : 'Money'} for ${item.effect_duration / 60} minutes.`,
             effect: {
                 type: item.effect_type,
                 value: item.effect_value,
