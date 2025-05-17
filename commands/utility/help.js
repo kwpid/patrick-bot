@@ -22,6 +22,15 @@ const categories = {
     }
 };
 
+// Define argument types and their descriptions
+const argumentTypes = {
+    user: 'mention a user',
+    text: 'text input',
+    number: 'a number',
+    time: 'time duration (e.g., 1m, 2h, 3d)',
+    option: 'one of the available options'
+};
+
 module.exports = {
     name: 'help',
     description: 'shows all available commands',
@@ -42,7 +51,10 @@ module.exports = {
                             commands.push({
                                 name: command.name,
                                 description: command.description || 'No description available',
-                                category: folder
+                                category: folder,
+                                usage: command.usage || '',
+                                args: command.args || [],
+                                aliases: command.aliases || []
                             });
                         }
                     }
@@ -58,23 +70,46 @@ module.exports = {
             // Create pages for each category
             const pages = [];
             for (const category in categories) {
-                if (categorizedCommands[category].length > 0) {
-                    const categoryInfo = categories[category];
-                    const embed = new EmbedBuilder()
-                        .setColor('#292929')
-                        .setTitle(categoryInfo.name)
-                        .setDescription(categoryInfo.description + '\n\n' +
-                            categorizedCommands[category]
-                                .sort((a, b) => a.name.localeCompare(b.name))
-                                .map(cmd => `**${cmd.name}**\n└ ${cmd.description}`)
-                                .join('\n\n')
-                        )
-                        .setFooter({ 
-                            text: `patrick • ${categorizedCommands[category].length} commands`
+                const categoryCommands = categorizedCommands[category];
+                if (categoryCommands.length === 0) continue;
+
+                const embed = new EmbedBuilder()
+                    .setColor('#292929')
+                    .setTitle(`${categories[category].name} commands`)
+                    .setDescription(categories[category].description)
+                    .addFields(
+                        categoryCommands.map(cmd => {
+                            let fieldValue = cmd.description;
+                            
+                            // Add usage if available
+                            if (cmd.usage) {
+                                fieldValue += `\n├ Usage: \`${cmd.usage}\``;
+                            }
+
+                            // Add arguments if available
+                            if (cmd.args && cmd.args.length > 0) {
+                                fieldValue += '\n├ Arguments:';
+                                cmd.args.forEach(arg => {
+                                    fieldValue += `\n  ├ \`${arg.name}\` (${arg.type}) - ${arg.description}`;
+                                });
+                            }
+
+                            // Add aliases if available
+                            if (cmd.aliases && cmd.aliases.length > 0) {
+                                fieldValue += `\n└ Aliases: \`${cmd.aliases.join(', ')}\``;
+                            }
+
+                            return {
+                                name: `\`${cmd.name}\``,
+                                value: fieldValue,
+                                inline: false
+                            };
                         })
-                        .setTimestamp();
-                    pages.push(embed);
-                }
+                    )
+                    .setFooter({ text: 'patrick' })
+                    .setTimestamp();
+
+                pages.push(embed);
             }
 
             let currentPage = 0;

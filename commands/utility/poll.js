@@ -3,6 +3,25 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = {
     name: 'poll',
     description: 'patrick creates a poll for you',
+    usage: 'pa poll Question | Option 1 | Option 2 | Option 3 [time]',
+    aliases: ['vote'],
+    args: [
+        {
+            name: 'question',
+            type: 'text',
+            description: 'the question to ask'
+        },
+        {
+            name: 'options',
+            type: 'text',
+            description: 'poll options separated by | (up to 10 options)'
+        },
+        {
+            name: 'time',
+            type: 'time',
+            description: 'how long the poll should last (e.g., 1m, 2h, 3d)'
+        }
+    ],
     execute(message, client) {
         const args = message.content.slice(4).trim().split('|');
         

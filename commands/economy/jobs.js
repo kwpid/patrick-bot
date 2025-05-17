@@ -1,21 +1,27 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getAllJobs, getUserData, getUserJob, formatNumber } = require('../../utils/economyUtils');
 const { getJobRequirements } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
-const PATRICK_COIN = '<:patrickcoin:1371211412940132492>';
-const CHECKMARK = '<:checkmark:1371506056177516586>';
-const FAIL = '<:fail:1371506033431810139>';
 const JOBS_PER_PAGE = 5;
 
 module.exports = {
     name: 'jobs',
-    description: 'view all available jobs',
-    aliases: ['joblist'],
+    description: 'view available jobs',
+    usage: 'pa jobs [category]',
+    aliases: ['work'],
+    args: [
+        {
+            name: 'category',
+            type: 'option',
+            description: 'filter jobs by category (optional)'
+        }
+    ],
     async execute(message, client) {
         try {
             const jobs = await getAllJobs();
             if (!jobs || jobs.length === 0) {
-                return message.reply("*no jobs are available right now!*");
+                return message.reply("no jobs are available right now");
             }
 
             const totalPages = Math.ceil(jobs.length / JOBS_PER_PAGE);
@@ -34,27 +40,26 @@ module.exports = {
                     .setTitle(`${message.author.username}'s Jobs`)
                     .setDescription(
                         pageJobs.map(job => {
-                            // Determine if job is available based on level
                             const isAvailable = userData.level >= job.required_level;
-                            const emoji = isAvailable ? CHECKMARK : FAIL;
-                            
+                            const emoji = isAvailable ? emojis.checkmark : emojis.fail;
+                    
                             let jobDisplay = `${emoji} **${job.job_name}**\n`;
-                            jobDisplay += `├ Salary: ${formatNumber(job.salary)} ${PATRICK_COIN} per shift\n`;
+                            jobDisplay += `├ Salary: ${formatNumber(job.salary)} ${emojis.coin} per shift\n`;
                             jobDisplay += `├ Required Level: ${job.required_level}\n`;
                             jobDisplay += `├ Minimum Shifts: ${job.min_shifts} per day\n`;
                             jobDisplay += `└ ID: \`${job.job_id}\``;
-                            
-                            // Add indicator for current job
+                    
                             if (userJob && userJob.job_name === job.job_name) {
                                 jobDisplay += ' *(current job)*';
                             }
-                            
+                    
                             return jobDisplay;
                         }).join('\n\n')
                     )
                     .setFooter({ 
-                        text: `Page ${currentPage + 1}/${totalPages} • patrick • ${CHECKMARK} = Available • ${FAIL} = Locked` 
+                        text: `Page ${currentPage + 1}/${totalPages} • patrick • ${emojis.checkmark} = Available • ${emojis.fail} = Locked` 
                     })
+                    
                     .setTimestamp();
 
                 return embed;
@@ -101,7 +106,7 @@ module.exports = {
             collector.on('collect', async (interaction) => {
                 if (interaction.user.id !== message.author.id) {
                     return interaction.reply({
-                        content: "*this isn't your jobs menu!*",
+                        content: "this isn't your jobs menu!",
                         ephemeral: true
                     });
                 }

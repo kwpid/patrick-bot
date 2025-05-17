@@ -547,7 +547,7 @@ async function addXp(userId, amount, message = null) {
             );
 
             // Add chest to inventory
-            await addItemToInventory(userId, 'basic_chest', chestReward);
+            await addItemToInventory(userId, 'chest_1', chestReward);
 
             // Get active boosts for display
             const activeBoosts = await getActiveBoostInfo(userId);

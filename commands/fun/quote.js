@@ -3,6 +3,15 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = {
     name: 'quote',
     description: 'quotes a message or creates a custom quote',
+    usage: 'pa quote [text]',
+    aliases: ['q'],
+    args: [
+        {
+            name: 'text',
+            type: 'text',
+            description: 'the text to quote (optional if replying to a message)'
+        }
+    ],
     execute(message, client) {
         const embed = new EmbedBuilder()
             .setColor('#292929')

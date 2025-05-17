@@ -1,9 +1,19 @@
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { getUsableItems, useItem } = require('../../utils/economyUtils');
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'use',
     description: 'use an item from your inventory',
+    usage: 'pa use',
+    aliases: ['consume'],
+    args: [
+        {
+            name: 'item',
+            type: 'option',
+            description: 'select an item from your inventory to use'
+        }
+    ],
     async execute(message, client) {
         try {
             const usableItems = await getUsableItems(message.author.id);
@@ -12,7 +22,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s items`)
-                    .setDescription("*you don't have any usable items in your inventory!*")
+                    .setDescription("you don't have any usable items in your inventory")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -22,7 +32,7 @@ module.exports = {
             // Create the select menu
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('use_item')
-                .setPlaceholder('Select an item to use')
+                .setPlaceholder('select an item to use')
                 .addOptions(
                     usableItems.map(item => ({
                         label: item.name || 'Unknown Item',
@@ -36,7 +46,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#292929')
-                .setTitle(`${message.author.username}'s Usable Items`)
+                .setTitle(`${message.author.username}'s items`)
                 .setDescription(
                     usableItems.map(item => 
                         `<:${item.name.replace(/\s+/g, '')}:${item.emoji_id}> **${item.name}** (${item.quantity}x)\n${item.description}`
@@ -66,11 +76,11 @@ module.exports = {
                     switch (effect.type) {
                         case 'xp_boost':
                             const boostPercent = Math.round((effect.value - 1) * 100);
-                            effectDescription = `+${boostPercent}% XP for ${effect.duration} minutes`;
+                            effectDescription = `+${boostPercent}% xp for ${effect.duration} minutes`;
                             break;
                         case 'money_boost':
                             const moneyBoostPercent = Math.round((effect.value - 1) * 100);
-                            effectDescription = `+${moneyBoostPercent}% Money for 10 minutes`;
+                            effectDescription = `+${moneyBoostPercent}% money for 10 minutes`;
                             break;
                         default:
                             effectDescription = 'Unknown effect';
@@ -80,8 +90,8 @@ module.exports = {
                         .setColor('#292929')
                         .setTitle(`${message.author.username}'s item use`)
                         .setDescription(
-                            `*you used a ${result.item ? result.item.name : 'Unknown Item'}!*\n` +
-                            `*effect: ${effectDescription}*`
+                            `you used a ${result.item ? result.item.name : 'Unknown Item'}\n` +
+                            `effect: ${effectDescription}`
                         )
                         .setFooter({ text: 'patrick' })
                         .setTimestamp();

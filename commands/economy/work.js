@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserData, getUserJob, updateUserData, updateLastWorked, incrementDailyShifts, resetDailyShifts, pool, getActiveEffects, setUserJob, getJobRequirements, getActiveBoostInfo, getMoneyBoostMultiplier, formatBoostInfo } = require('../../utils/economyUtils');
 const { runRandomGame } = require('../../games/workGames');
+const emojis = require ('../../data/emojis.json')
 
 module.exports = {
     name: 'work',
@@ -17,7 +18,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s work`)
-                    .setDescription("*you don't have a job! use `pa jobs` to see available jobs.*")
+                    .setDescription("you don't have a job! use `pa jobs` to see available jobs.")
                     .setFooter({ text: 'patrick' })
                     .setTimestamp();
 
@@ -42,7 +43,7 @@ module.exports = {
                     userJob.shifts_worked = 0;
                 } else if (minutesDiff < 15) {
                     const minutesLeft = Math.ceil(15 - minutesDiff);
-                    return message.reply(`*you can work again in ${minutesLeft} minutes!*`);
+                    return message.reply(`you can work again in ${minutesLeft} minutes`);
                 }
             }
 
@@ -84,7 +85,7 @@ module.exports = {
             const shifted = await incrementDailyShifts(message.author.id);
 
             if (!worked || !shifted) {
-                return message.reply("*something went wrong while updating your work status!*");
+                return message.reply("something went wrong while updating your work status!");
             }
 
             if (gameResult.success) {
@@ -111,9 +112,9 @@ module.exports = {
                 
                 if (gotFired) {
                     description += `*you got fired for drinking on the job!*\n`;
-                    description += `*you lost ${moneyLost} <:patrickcoin:1371211412940132492>!*\n`;
+                    description += `*you lost ${moneyLost} ${emojis.coin}!*\n`;
                 } else {
-                    description += `*you earned ${salary} <:patrickcoin:1371211412940132492>!*\n`;
+                    description += `*you earned ${salary} ${emojis.coin} *\n`;
                 }
 
                 description += `\n*shifts today: ${newDailyShifts} (minimum required: ${newMinShifts})*\n`;

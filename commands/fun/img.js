@@ -44,7 +44,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle("no images found")
-                .setDescription("*i don't have any pictures of me yet*")
+                .setDescription("i don't have any pictures of me yet")
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
             
@@ -62,7 +62,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor('#292929')
-            .setTitle("look at me!")
+            .setTitle("look at me")
             .setImage(randomImage)
             .setFooter({ text: 'patrick' })
             .setTimestamp();
