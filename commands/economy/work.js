@@ -32,7 +32,16 @@ module.exports = {
                 const timeDiff = now - lastWorked;
                 const minutesDiff = timeDiff / (1000 * 60);
 
-                if (minutesDiff < 15) {
+                // Check if 24 hours have passed since last shift
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                if (hoursDiff >= 24) {
+                    // Reset shifts if 24 hours have passed
+                    await pool.query(
+                        'UPDATE user_jobs SET shifts_worked = 0 WHERE user_id = $1 AND job_id = $2',
+                        [message.author.id, userJob.job_id]
+                    );
+                    userJob.shifts_worked = 0;
+                } else if (minutesDiff < 15) {
                     const minutesLeft = Math.ceil(15 - minutesDiff);
                     return message.reply(`you can work again in ${minutesLeft} minutes`);
                 }
