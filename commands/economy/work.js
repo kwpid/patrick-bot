@@ -37,7 +37,7 @@ module.exports = {
                 if (hoursDiff >= 24) {
                     // Reset shifts if 24 hours have passed
                     await pool.query(
-                        'UPDATE user_jobs SET shifts_worked = 0 WHERE user_id = $1 AND job_id = $2',
+                        'UPDATE jobs SET daily_shifts = 0 WHERE user_id = $1 AND job_id = $2',
                         [message.author.id, userJob.job_id]
                     );
                     userJob.shifts_worked = 0;
