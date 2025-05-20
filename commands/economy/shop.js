@@ -14,20 +14,8 @@ function shouldResetShop() {
 module.exports = {
     name: 'shop',
     description: 'view and buy items from the shop',
-    usage: 'pa shop [category/item]',
+    usage: 'pa shop',
     aliases: ['store', 'buy'],
-    args: [
-        {
-            name: 'category',
-            type: 'option',
-            description: 'the category of items to view (optional)'
-        },
-        {
-            name: 'item',
-            type: 'text',
-            description: 'the name of the item to buy (optional)'
-        }
-    ],
     async execute(message, client) {
         try {
             if (message.content.toLowerCase().includes('refresh')) {
