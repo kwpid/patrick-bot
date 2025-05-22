@@ -20,13 +20,11 @@ module.exports = {
     aliases: ['friends', 'guild'],
     async execute(message, client) {
         try {
-            // Get user data
             const userData = await getUserData(message.author.id);
             if (!userData) {
                 return message.reply("*you don't have an account yet!*");
             }
 
-            // Create main menu embed
             const mainEmbed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${emojis.social} social menu`)
@@ -41,7 +39,6 @@ module.exports = {
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
-            // Create main menu select
             const mainMenu = new StringSelectMenuBuilder()
                 .setCustomId('social_menu')
                 .setPlaceholder('Select a feature')
@@ -80,7 +77,7 @@ module.exports = {
             });
 
             const collector = response.createMessageComponentCollector({
-                time: 300000 // 5 minutes
+                time: 300000
             });
 
             collector.on('collect', async (interaction) => {
@@ -385,7 +382,6 @@ async function handleGiftCoins(interaction, targetId) {
 
     await interaction.update({ embeds: [embed], components: [] });
 
-    // Create a message collector for the amount
     const filter = m => m.author.id === interaction.user.id;
     const collector = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
 

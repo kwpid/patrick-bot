@@ -10,7 +10,6 @@ module.exports = {
         .setDescription('Fix database issues (Admin only)'),
 
     async execute(interaction) {
-        // Check if user has admin permissions
         if (!interaction.member.permissions.has('Administrator')) {
             return interaction.reply({
                 content: '❌ You need Administrator permissions to use this command.',

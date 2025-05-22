@@ -1,6 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
-// Word scramble game
 async function wordScrambleGame(message) {
     const words = [
         'krabby', 'patty', 'burger', 'fry', 'shake',
@@ -35,7 +34,6 @@ async function wordScrambleGame(message) {
     }
 }
 
-// Emoji memory game
 async function emojiMemoryGame(message) {
     const emojis = ['🍔', '🍟', '🥤', '🍦', '🍕', '🌮', '🍿', '🍪', '🍩', '🍫'];
     const targetEmoji = emojis[Math.floor(Math.random() * emojis.length)];
@@ -49,10 +47,8 @@ async function emojiMemoryGame(message) {
 
     const msg = await message.reply({ embeds: [embed] });
     
-    // Wait 3 seconds
     await new Promise(resolve => setTimeout(resolve, 3000));
     
-    // Create buttons with random emojis
     const buttonEmojis = [...emojis].sort(() => Math.random() - 0.5).slice(0, 4);
     if (!buttonEmojis.includes(targetEmoji)) {
         buttonEmojis[Math.floor(Math.random() * 4)] = targetEmoji;
@@ -93,7 +89,6 @@ async function emojiMemoryGame(message) {
     }
 }
 
-// Select and run a random game
 async function runRandomGame(message) {
     const games = [wordScrambleGame, emojiMemoryGame];
     const selectedGame = games[Math.floor(Math.random() * games.length)];

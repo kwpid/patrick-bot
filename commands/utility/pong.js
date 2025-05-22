@@ -7,7 +7,7 @@ module.exports = {
         const ping = client.ws.ping;
         const embed = new EmbedBuilder()
             .setColor('#292929')
-            .setTitle('Pong!')
+            .setTitle('ping')
             .setDescription(`my response time is **${ping}ms**`)
             .setFooter({ text: 'patrick' })
             .setTimestamp();

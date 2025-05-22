@@ -65,7 +65,6 @@ module.exports = {
                 return embed;
             }
 
-            // Create navigation buttons
             const createButtons = () => {
                 return new ActionRowBuilder()
                     .addComponents(
@@ -92,13 +91,11 @@ module.exports = {
                     );
             };
 
-            // Send initial message
             const response = await message.reply({
                 embeds: [generateEmbed()],
                 components: [createButtons()]
             });
 
-            // Create collector for button interactions
             const collector = response.createMessageComponentCollector({
                 time: 60000
             });

@@ -6,7 +6,6 @@ module.exports = {
     description: 'reset job requirements and jobs tables (admin only)',
     async execute(message, client) {
         try {
-            // Check if user is admin
             if (!message.member.permissions.has('Administrator')) {
                 return message.reply("*you don't have permission to use this command!*");
             }

@@ -4,7 +4,6 @@ const { shopItems } = require('../../data/shopItems.json');
 const emojis = require ('../../data/emojis.json')
 
 
-// Function to check if shop needs to be reset (12 PM EST)
 function shouldResetShop() {
     const now = new Date();
     const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
@@ -35,17 +34,14 @@ module.exports = {
                 return message.reply("shop has been refreshed");
             }
 
-            // Get user data
             const userData = await getUserData(message.author.id);
             if (!userData) {
                 return message.reply("*you don't have an account yet!*");
             }
 
-            // Update shop items if needed
             await updateShopItems();
             let shopItems = await getShopItems();
             
-            // If still no items, show error message
             if (!shopItems || shopItems.length === 0) {
                 return message.reply("the shop is empty right now, check back later");
             }
@@ -56,8 +52,7 @@ module.exports = {
                 .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
                 .setDescription(
                     shopItems.map(item => {
-                        // Special case for Devil's Pitchfork
-                        const emojiName = item.item_id === 'devilpitchfork' ? 'devils_pitchfork' : item.item_id;
+                        const emojiName = item.item_id;
                         let itemDisplay = `<:${emojiName}:${item.emoji_id}> **${item.name}**\n`;
                         itemDisplay += `├ Price: ${formatNumber(item.price)} ${emojis.coin}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
@@ -99,7 +94,6 @@ module.exports = {
                 }
 
                 if (interaction.customId === 'buy') {
-                    // Create rows with buttons for each item (max 5 buttons per row)
                     const rows = [];
                     for (let i = 0; i < shopItems.length; i += 5) {
                         const itemRow = new ActionRowBuilder()
@@ -128,7 +122,6 @@ module.exports = {
                         });
                     }
 
-                    // Check if user has enough money
                     if (userData.balance < item.price) {
                         return interaction.reply({
                             content: `you don't have enough ${emojis.coin} to buy this item!`,
@@ -136,7 +129,6 @@ module.exports = {
                         });
                     }
 
-                    // Add item to inventory and update balance
                     const success = await addItemToInventory(message.author.id, item.item_id);
                     if (!success) {
                         return interaction.reply({
@@ -145,7 +137,6 @@ module.exports = {
                         });
                     }
 
-                    // Update user's balance
                     userData.balance -= item.price;
                     await updateUserData(message.author.id, userData);
 
@@ -158,7 +149,6 @@ module.exports = {
 
                     await interaction.reply({ embeds: [buyEmbed] });
 
-                    // Update the original message to remove the buttons
                     const updatedEmbed = new EmbedBuilder()
                         .setColor('#292929')
                         .setTitle(`${emojis.shop} patrick's shop`)

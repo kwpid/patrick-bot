@@ -18,7 +18,6 @@ module.exports = {
             .setFooter({ text: 'patrick' })
             .setTimestamp();
 
-        // Check if the message is a reply
         if (message.reference) {
             message.channel.messages.fetch(message.reference.messageId)
                 .then(referencedMsg => {
@@ -32,7 +31,6 @@ module.exports = {
                     message.reply({ embeds: [embed] });
                 });
         } else {
-            // Check if there's custom text after the command
             const args = message.content.split(' ').slice(1);
             if (args.length > 0) {
                 const quoteText = args.join(' ');

@@ -6,14 +6,10 @@ module.exports = {
     description: 'check the current state of job requirements (admin only)',
     async execute(message, client) {
         try {
-            // Check if user is admin
             if (!message.member.permissions.has('Administrator')) {
                 return message.reply("you don't have permission to use this command!");
             }
-
-            // Get all jobs from the table
             const result = await getJobRequirements();
-            
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle('patrick\'s job requirements')
