@@ -170,6 +170,73 @@ async function initializeDatabase() {
             )
         `);
 
+        // Create friends table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS friends (
+                user_id TEXT,
+                friend_id TEXT,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, friend_id),
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (friend_id) REFERENCES economy(user_id) ON DELETE CASCADE,
+                CHECK (user_id != friend_id)
+            )
+        `);
+
+        // Create guilds table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS guilds (
+                guild_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                level INTEGER DEFAULT 1,
+                xp INTEGER DEFAULT 0,
+                next_level_xp INTEGER DEFAULT 1000,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create guild_members table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS guild_members (
+                guild_id TEXT,
+                user_id TEXT,
+                role TEXT DEFAULT 'member',
+                joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (guild_id, user_id),
+                FOREIGN KEY (guild_id) REFERENCES guilds(guild_id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create guild_benefits table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS guild_benefits (
+                guild_id TEXT,
+                benefit_type TEXT,
+                value DECIMAL(5,2),
+                PRIMARY KEY (guild_id, benefit_type),
+                FOREIGN KEY (guild_id) REFERENCES guilds(guild_id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create gift_logs table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS gift_logs (
+                gift_id SERIAL PRIMARY KEY,
+                sender_id TEXT,
+                receiver_id TEXT,
+                item_id TEXT,
+                quantity INTEGER,
+                coins INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (sender_id) REFERENCES economy(user_id) ON DELETE SET NULL,
+                FOREIGN KEY (receiver_id) REFERENCES economy(user_id) ON DELETE SET NULL
+            )
+        `);
+
         // Recreate shop table with new schema
         await recreateShopTable();
 
@@ -1510,6 +1577,156 @@ function formatBoostInfo(boosts) {
     }).join('\n');
 }
 
+// Add new social-related functions
+async function addFriend(userId, friendId) {
+    try {
+        // Check if friendship already exists
+        const existing = await pool.query(
+            'SELECT * FROM friends WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)',
+            [userId, friendId]
+        );
+
+        if (existing.rows.length > 0) {
+            return { success: false, message: "Friendship already exists!" };
+        }
+
+        // Add friend request
+        await pool.query(
+            'INSERT INTO friends (user_id, friend_id, status) VALUES ($1, $2, $3)',
+            [userId, friendId, 'pending']
+        );
+
+        return { success: true, message: "Friend request sent!" };
+    } catch (error) {
+        console.error('Error adding friend:', error);
+        return { success: false, message: "Failed to send friend request" };
+    }
+}
+
+async function acceptFriendRequest(userId, friendId) {
+    try {
+        const result = await pool.query(
+            'UPDATE friends SET status = $1 WHERE user_id = $2 AND friend_id = $3 AND status = $4',
+            ['accepted', friendId, userId, 'pending']
+        );
+
+        if (result.rowCount === 0) {
+            return { success: false, message: "No pending friend request found!" };
+        }
+
+        return { success: true, message: "Friend request accepted!" };
+    } catch (error) {
+        console.error('Error accepting friend request:', error);
+        return { success: false, message: "Failed to accept friend request" };
+    }
+}
+
+async function removeFriend(userId, friendId) {
+    try {
+        await pool.query(
+            'DELETE FROM friends WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)',
+            [userId, friendId]
+        );
+
+        return { success: true, message: "Friend removed!" };
+    } catch (error) {
+        console.error('Error removing friend:', error);
+        return { success: false, message: "Failed to remove friend" };
+    }
+}
+
+async function getFriends(userId) {
+    try {
+        const result = await pool.query(
+            `SELECT f.*, e.level, e.xp
+             FROM friends f
+             JOIN economy e ON (f.friend_id = e.user_id)
+             WHERE f.user_id = $1 AND f.status = 'accepted'`,
+            [userId]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting friends:', error);
+        return [];
+    }
+}
+
+async function getPendingFriendRequests(userId) {
+    try {
+        const result = await pool.query(
+            `SELECT f.*, e.level, e.xp
+             FROM friends f
+             JOIN economy e ON (f.user_id = e.user_id)
+             WHERE f.friend_id = $1 AND f.status = 'pending'`,
+            [userId]
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting pending friend requests:', error);
+        return [];
+    }
+}
+
+async function giftItem(senderId, receiverId, itemId, quantity = 1) {
+    try {
+        // Check if sender has the item
+        const inventory = await getUserInventory(senderId);
+        const item = inventory.find(i => i.item_id === itemId);
+        
+        if (!item || item.quantity < quantity) {
+            return { success: false, message: "You don't have enough of this item!" };
+        }
+
+        // Remove item from sender
+        await removeItemFromInventory(senderId, itemId, quantity);
+        
+        // Add item to receiver
+        await addItemToInventory(receiverId, itemId, quantity);
+
+        // Log the gift
+        await pool.query(
+            'INSERT INTO gift_logs (sender_id, receiver_id, item_id, quantity) VALUES ($1, $2, $3, $4)',
+            [senderId, receiverId, itemId, quantity]
+        );
+
+        return { success: true, message: "Gift sent successfully!" };
+    } catch (error) {
+        console.error('Error gifting item:', error);
+        return { success: false, message: "Failed to send gift" };
+    }
+}
+
+async function giftCoins(senderId, receiverId, amount) {
+    try {
+        // Get sender's data
+        const senderData = await getUserData(senderId);
+        if (!senderData || senderData.balance < amount) {
+            return { success: false, message: "You don't have enough coins!" };
+        }
+
+        // Get receiver's data
+        const receiverData = await getUserData(receiverId);
+        if (!receiverData) {
+            return { success: false, message: "Receiver doesn't have an account!" };
+        }
+
+        // Update balances
+        await updateUserData(senderId, { balance: senderData.balance - amount });
+        await updateUserData(receiverId, { balance: receiverData.balance + amount });
+
+        // Log the gift
+        await pool.query(
+            'INSERT INTO gift_logs (sender_id, receiver_id, coins) VALUES ($1, $2, $3)',
+            [senderId, receiverId, amount]
+        );
+
+        return { success: true, message: "Coins sent successfully!" };
+    } catch (error) {
+        console.error('Error gifting coins:', error);
+        return { success: false, message: "Failed to send coins" };
+    }
+}
+
 module.exports = {
     pool,
     testConnection,
@@ -1549,5 +1766,12 @@ module.exports = {
     useItem,
     getActiveBoostInfo,
     getMoneyBoostMultiplier,
-    formatBoostInfo
+    formatBoostInfo,
+    addFriend,
+    acceptFriendRequest,
+    removeFriend,
+    getFriends,
+    getPendingFriendRequests,
+    giftItem,
+    giftCoins
 }; 
