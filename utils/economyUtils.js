@@ -767,7 +767,7 @@ async function updateShopItems() {
         );
         
         const lastUpdate = lastUpdateResult.rows[0]?.last_updated;
-        const shouldUpdate = !lastUpdate || isNoon;
+        const shouldUpdate = !lastUpdate || (isNoon && (!lastUpdate || new Date(lastUpdate).toLocaleString('en-US', { timeZone: 'America/New_York' }).split(',')[0] !== est.toLocaleString('en-US', { timeZone: 'America/New_York' }).split(',')[0]));
         
         if (!shouldUpdate) {
             return true; // Don't update if it's not time yet
@@ -790,8 +790,9 @@ async function updateShopItems() {
             await pool.query(
                 `INSERT INTO shop (
                     item_id, name, description, price, emoji_id, 
-                    tags, value, type, on_sale, last_updated
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+                    tags, value, type, on_sale, last_updated,
+                    effect_type, effect_value, effect_duration
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, $10, $11, $12)
                 ON CONFLICT (item_id) 
                 DO UPDATE SET 
                     name = EXCLUDED.name,
@@ -802,7 +803,10 @@ async function updateShopItems() {
                     value = EXCLUDED.value,
                     type = EXCLUDED.type,
                     on_sale = EXCLUDED.on_sale,
-                    last_updated = CURRENT_TIMESTAMP`,
+                    last_updated = CURRENT_TIMESTAMP,
+                    effect_type = EXCLUDED.effect_type,
+                    effect_value = EXCLUDED.effect_value,
+                    effect_duration = EXCLUDED.effect_duration`,
                 [
                     item.id,
                     item.name,
@@ -812,7 +816,10 @@ async function updateShopItems() {
                     item.tags,
                     item.value,
                     item.type,
-                    true
+                    true,
+                    item.effect?.type || null,
+                    item.effect?.value || null,
+                    item.effect?.duration || null
                 ]
             );
         }
@@ -829,8 +836,9 @@ async function updateShopItems() {
                 await pool.query(
                     `INSERT INTO shop (
                         item_id, name, description, price, emoji_id, 
-                        tags, value, type, on_sale, last_updated
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+                        tags, value, type, on_sale, last_updated,
+                        effect_type, effect_value, effect_duration
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, $10, $11, $12)
                     ON CONFLICT DO NOTHING`,
                     [
                         item.id,
@@ -841,7 +849,10 @@ async function updateShopItems() {
                         item.tags,
                         item.value,
                         item.type,
-                        true
+                        true,
+                        item.effect?.type || null,
+                        item.effect?.value || null,
+                        item.effect?.duration || null
                     ]
                 );
             }

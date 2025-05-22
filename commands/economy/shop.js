@@ -35,14 +35,16 @@ module.exports = {
                 return message.reply("shop has been refreshed");
             }
 
-            let shopItems = await getShopItems();
-            
-            // If no items in shop or it's time to reset, update the shop
-            if (!shopItems || shopItems.length === 0 || shouldResetShop()) {
-                await updateShopItems();
-                shopItems = await getShopItems();
+            // Get user data
+            const userData = await getUserData(message.author.id);
+            if (!userData) {
+                return message.reply("*you don't have an account yet!*");
             }
 
+            // Update shop items if needed
+            await updateShopItems();
+            let shopItems = await getShopItems();
+            
             // If still no items, show error message
             if (!shopItems || shopItems.length === 0) {
                 return message.reply("the shop is empty right now, check back later");
@@ -55,10 +57,15 @@ module.exports = {
                 .setDescription(
                     shopItems.map(item => {
                         // Special case for Devil's Pitchfork
-                        const emojiName = item.id === 'devilpitchfork' ? 'devils_pitchfork' : item.id;
+                        const emojiName = item.item_id === 'devilpitchfork' ? 'devils_pitchfork' : item.item_id;
                         let itemDisplay = `<:${emojiName}:${item.emoji_id}> **${item.name}**\n`;
                         itemDisplay += `├ Price: ${formatNumber(item.price)} ${emojis.coin}\n`;
                         itemDisplay += `├ Description: ${item.description}\n`;
+                        if (item.effect_type) {
+                            const effectValue = Math.round((item.effect_value - 1) * 100);
+                            const effectDuration = item.effect_duration / 60;
+                            itemDisplay += `├ Effect: +${effectValue}% ${item.effect_type === 'xp_boost' ? 'XP' : 'Money'} for ${effectDuration} minutes\n`;
+                        }
                         itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
                         return itemDisplay;
                     }).join('\n\n')
@@ -91,56 +98,90 @@ module.exports = {
                     });
                 }
 
-                const userData = await getUserData(message.author.id);
-                if (!userData) {
-                    return interaction.reply({
-                        content: "you don't have an account yet",
-                        ephemeral: true
+                if (interaction.customId === 'buy') {
+                    // Create rows with buttons for each item (max 5 buttons per row)
+                    const rows = [];
+                    for (let i = 0; i < shopItems.length; i += 5) {
+                        const itemRow = new ActionRowBuilder()
+                            .addComponents(
+                                ...shopItems.slice(i, i + 5).map(item => 
+                                    new ButtonBuilder()
+                                        .setCustomId(`buy_${item.item_id}`)
+                                        .setLabel(`buy ${item.name}`)
+                                        .setStyle(ButtonStyle.Secondary)
+                                )
+                            );
+                        rows.push(itemRow);
+                    }
+
+                    await interaction.update({
+                        components: rows
                     });
+                } else if (interaction.customId.startsWith('buy_')) {
+                    const itemId = interaction.customId.replace('buy_', '');
+                    const item = shopItems.find(i => i.item_id === itemId);
+
+                    if (!item) {
+                        return interaction.reply({
+                            content: "this item is no longer available",
+                            ephemeral: true
+                        });
+                    }
+
+                    // Check if user has enough money
+                    if (userData.balance < item.price) {
+                        return interaction.reply({
+                            content: `you don't have enough ${emojis.coin} to buy this item!`,
+                            ephemeral: true
+                        });
+                    }
+
+                    // Add item to inventory and update balance
+                    const success = await addItemToInventory(message.author.id, item.item_id);
+                    if (!success) {
+                        return interaction.reply({
+                            content: "failed to add item to inventory",
+                            ephemeral: true
+                        });
+                    }
+
+                    // Update user's balance
+                    userData.balance -= item.price;
+                    await updateUserData(message.author.id, userData);
+
+                    const buyEmbed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle(`${message.author.username}'s purchase`)
+                        .setDescription(`*you bought ${item.name} for ${formatNumber(item.price)} ${emojis.coin}*`)
+                        .setFooter({ text: 'patrick' })
+                        .setTimestamp();
+
+                    await interaction.reply({ embeds: [buyEmbed] });
+
+                    // Update the original message to remove the buttons
+                    const updatedEmbed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle(`${emojis.shop} patrick's shop`)
+                        .setDescription("menu closed")
+                        .setFooter({ text: 'patrick' })
+                        .setTimestamp();
+
+                    await response.edit({ embeds: [updatedEmbed], components: [] });
+                    collector.stop();
                 }
+            });
 
-                // Create rows with buttons for each item (max 5 buttons per row)
-                const rows = [];
-                for (let i = 0; i < shopItems.length; i += 5) {
-                    const itemRow = new ActionRowBuilder()
-                        .addComponents(
-                            ...shopItems.slice(i, i + 5).map((item, index) => 
-                                new ButtonBuilder()
-                                    .setCustomId(`buy_${item.item_id}`)
-                                    .setLabel(`buy ${item.name}`)
-                                    .setStyle(ButtonStyle.Secondary)
-                            )
-                        );
-                    rows.push(itemRow);
+            collector.on('end', () => {
+                if (!response.deleted) {
+                    const endEmbed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle(`${emojis.shop} patrick's shop`)
+                        .setDescription("menu closed")
+                        .setFooter({ text: 'patrick' })
+                        .setTimestamp();
+
+                    response.edit({ embeds: [endEmbed], components: [] }).catch(() => {});
                 }
-
-                const embed = new EmbedBuilder()
-                    .setColor('#292929')
-                    .setTitle(`${emojis.shop} patrick's shop`)
-                    .setThumbnail('https://media.discordapp.net/attachments/799428131714367498/1371228930027294720/9k.png?ex=68225ff5&is=68210e75&hm=194a8e609e91114635768cc514b237ec6bca6bec0069150263c4ad8c0ffadd06&=&format=webp&quality=lossless')
-                    .setDescription(
-                        shopItems.map(item => {
-                            // Special case for Devil's Pitchfork
-                            const emojiName = item.id === 'devilpitchfork' ? 'devils_pitchfork' : item.id;
-                            let itemDisplay = `<:${emojiName}:${item.emoji_id}> **${item.name}**\n`;
-                            itemDisplay += `├ Price: ${formatNumber(item.price)} ${emojis.coin}\n`;
-                            itemDisplay += `├ Description: ${item.description}\n`;
-                            itemDisplay += `└ Tags: ${item.tags.join(', ')}`;
-                            return itemDisplay;
-                        }).join('\n\n')
-                    )
-                    .setFooter({ text: 'patrick • resets at 12 PM EST' })
-                    .setTimestamp();
-
-                const row = new ActionRowBuilder()
-                    .addComponents(
-                        ...rows
-                    );
-
-                const response = await message.reply({
-                    embeds: [embed],
-                    components: [row]
-                });
             });
         } catch (error) {
             console.error('Error executing shop command:', error);
