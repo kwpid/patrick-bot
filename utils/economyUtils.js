@@ -265,6 +265,16 @@ async function initializeDatabase() {
         // Create active effects table
         await createActiveEffectsTable();
 
+        // Create daily rewards table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS daily_rewards (
+                user_id TEXT PRIMARY KEY,
+                streak INTEGER DEFAULT 0,
+                last_claimed TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE
+            )
+        `);
+
         console.log('Database tables initialized successfully');
     } catch (error) {
         console.error('Error initializing database tables:', error);
