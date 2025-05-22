@@ -14,6 +14,26 @@ module.exports = {
             const userData = await getUserData(message.author.id);
             const userJob = await getUserJob(message.author.id);
 
+            // Check if user was fired
+            if (userJob && userJob.daily_shifts === 0 && userJob.last_shift_reset) {
+                const lastReset = new Date(userJob.last_shift_reset);
+                const now = new Date();
+                const timeDiff = now - lastReset;
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+                // If it's been less than 24 hours since they were fired
+                if (hoursDiff < 24) {
+                    const embed = new EmbedBuilder()
+                        .setColor('#292929')
+                        .setTitle(`${message.author.username}'s work`)
+                        .setDescription("you were fired for not meeting your minimum shift requirements! you can apply for a new job tomorrow.")
+                        .setFooter({ text: 'patrick' })
+                        .setTimestamp();
+
+                    return message.reply({ embeds: [embed] });
+                }
+            }
+
             if (!userJob) {
                 const embed = new EmbedBuilder()
                     .setColor('#292929')

@@ -1241,15 +1241,21 @@ async function resetDailyShifts() {
             `);
 
             for (const job of result.rows) {
-                // 70% chance of getting fired if minimum shifts not met
-                if (job.daily_shifts < job.min_shifts && Math.random() < 0.7) {
+                // Fire user if minimum shifts not met
+                if (job.daily_shifts < job.min_shifts) {
+                    // Update last_shift_reset before firing to track when they were fired
+                    await pool.query(
+                        'UPDATE jobs SET last_shift_reset = CURRENT_TIMESTAMP WHERE user_id = $1',
+                        [job.user_id]
+                    );
+                    
+                    // Fire the user
                     await setUserJob(job.user_id, null);
-                    // Notify user (you'll need to implement this)
                     console.log(`User ${job.user_id} was fired from ${job.job_name} for not meeting minimum shifts`);
                 }
             }
 
-            // Reset shifts for all jobs
+            // Reset shifts for remaining jobs
             await pool.query(`
                 UPDATE jobs 
                 SET daily_shifts = 0, 
