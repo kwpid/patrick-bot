@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUserJob, setUserJob, getLastQuitTime, setLastQuitTime } = require('../../utils/economyUtils');
 
-const COOLDOWN_TIME = 60 * 60 * 1000; // 1 hour in ms
+const COOLDOWN_TIME = 60 * 60 * 1000;
 
 module.exports = {
     name: 'quit',
@@ -22,7 +22,6 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Remove cooldown check and last quit time references
             const success = await setUserJob(userId, null);
 
             if (success) {

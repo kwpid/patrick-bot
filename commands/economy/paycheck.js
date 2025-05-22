@@ -2,9 +2,8 @@ const { EmbedBuilder } = require('discord.js');
 const { getUserData, getUserJob, updateUserData, getJobRequirements } = require('../../utils/economyUtils');
 const emojis = require ('../../data/emojis.json')
 
-// Cooldown map to track user cooldowns
 const cooldowns = new Map();
-const COOLDOWN_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
+const COOLDOWN_TIME = 30 * 60 * 1000;
 
 module.exports = {
     name: 'paycheck',
@@ -39,12 +38,11 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            const amount = Math.floor(Math.random() * 401) + 100; // Random amount between 100-500
-            const boostedAmount = Math.floor(amount * 1.05); // +5% more money for every paycheck
+            const amount = Math.floor(Math.random() * 401) + 100;
+            const boostedAmount = Math.floor(amount * 1.05);
             const newBalance = userData.balance + boostedAmount;
             await updateUserData(userId, { balance: newBalance });
 
-            // Set cooldown
             cooldowns.set(userId, now + COOLDOWN_TIME);
 
             const embed = new EmbedBuilder()

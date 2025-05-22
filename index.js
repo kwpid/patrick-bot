@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const { trackMessage, trackCommand } = require('./utils/economyUtils');
 
-// Environment variables
 const GUILD_ID = process.env.GUILD_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -12,7 +11,6 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 console.log('Starting bot...');
 console.log('Checking environment variables...');
 
-// Validate environment variables
 if (!BOT_TOKEN) {
     console.error('Error: BOT_TOKEN is not set in environment variables');
     process.exit(1);
@@ -49,14 +47,11 @@ const client = new Client({
 const prefix = 'pa';
 client.commands = new Collection();
 
-// Store deleted messages
 const deletedMessages = new Map();
 
-// Load commands
 console.log('Loading commands...');
 const commandsPath = path.join(__dirname, 'commands');
 
-// Function to recursively load commands from directories
 function loadCommands(dir) {
     const files = fs.readdirSync(dir);
     
@@ -65,11 +60,10 @@ function loadCommands(dir) {
         const stat = fs.statSync(filePath);
         
         if (stat.isDirectory()) {
-            // Recursively load commands from subdirectories
             loadCommands(filePath);
-        } else if (file.endsWith('.js') && file !== 'economyUtils.js') {  // Skip utility files
+        } else if (file.endsWith('.js') && file !== 'economyUtils.js') {
             const command = require(filePath);
-            if (command.name) {  // Only load if it has a name property
+            if (command.name) {
                 client.commands.set(command.name, command);
                 console.log(`Loaded command: ${command.name} (${path.relative(commandsPath, filePath)})`);
             }
@@ -77,10 +71,8 @@ function loadCommands(dir) {
     }
 }
 
-// Load all commands
 loadCommands(commandsPath);
 
-// Connection events
 client.on('connecting', () => {
     console.log('Connecting to Discord...');
 });
@@ -94,37 +86,37 @@ client.on('disconnect', () => {
 });
 
 const activities = [
-    // Krusty Krab
+    // krusty krab
     { name: 'flipping Krabby Patties at the Krusty Krab', type: ActivityType.Playing },
     { name: 'eating a Krabby Patty at the Krusty Krab', type: ActivityType.Playing },
     { name: 'annoying Squidward at the Krusty Krab', type: ActivityType.Playing },
   
-    // Jellyfish Fields
+    // jellyfish fields
     { name: 'jellyfishing in Jellyfish Fields', type: ActivityType.Playing },
     { name: 'getting stung in Jellyfish Fields', type: ActivityType.Playing },
     { name: 'dancing with jellyfish in Jellyfish Fields', type: ActivityType.Playing },
   
-    // At Home
+    // at home
     { name: 'sleeping under his rock', type: ActivityType.Playing },
     { name: 'talking to the TV under his rock', type: ActivityType.Playing },
     { name: 'playing with a bubble wand under his rock', type: ActivityType.Playing },
   
-    // With Friends
+    // with friends
     { name: 'blowing bubbles with SpongeBob', type: ActivityType.Playing },
     { name: 'playing with Gary the snail', type: ActivityType.Playing },
     { name: 'playing dumb with SpongeBob', type: ActivityType.Playing },
   
-    // Goo Lagoon
+    // goo la gooner
     { name: 'soaking up sun at Goo Lagoon', type: ActivityType.Playing },
     { name: 'building sandcastles at Goo Lagoon', type: ActivityType.Playing },
   
-    // Music-related (can be anywhere)
+    // music-related 
     { name: 'rocking out on a guitar', type: ActivityType.Playing },
     { name: 'banging on a drum set', type: ActivityType.Playing },
     { name: 'squawking on a clarinet like Squidward', type: ActivityType.Playing },
     { name: 'trying to play the ukulele', type: ActivityType.Playing },
   
-    // Misc Bikini Bottom
+    // misc Bikini Bottom
     { name: 'wandering around Bikini Bottom', type: ActivityType.Playing },
     { name: 'getting lost near the Chum Bucket', type: ActivityType.Playing },
     { name: 'pretending to be smart at the library', type: ActivityType.Playing },
@@ -132,7 +124,6 @@ const activities = [
   ];
   
 
-// Function to update presence
 function updatePresence() {
     const activity = activities[Math.floor(Math.random() * activities.length)];
     client.user.setPresence({
@@ -148,10 +139,8 @@ client.once('ready', () => {
     console.log(`Guild ID: ${GUILD_ID}`);
     console.log('=================================');
     
-    // Set initial presence
     updatePresence();
     
-    // Update presence every 15 seconds
     setInterval(updatePresence, 15000);
 
     // Verify guild access
@@ -168,7 +157,6 @@ client.once('ready', () => {
     console.log(`Successfully verified access to guild: ${guild.name}`);
 });
 
-// Track deleted messages
 client.on('messageDelete', message => {
     if (!message || message.author?.bot) return;
     
@@ -179,7 +167,6 @@ client.on('messageDelete', message => {
         timestamp: Date.now()
     });
     
-    // Keep only the last 10 messages
     if (channelMessages.length > 10) {
         channelMessages.pop();
     }
@@ -190,7 +177,6 @@ client.on('messageDelete', message => {
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
-    // Track message for XP
     await trackMessage(message);
 
     const prefix = 'pa ';
@@ -206,7 +192,6 @@ client.on('messageCreate', async message => {
 
     try {
         await command.execute(message, client);
-        // Track command for XP
         await trackCommand(message);
     } catch (error) {
         console.error('Error executing command:', error);
@@ -214,7 +199,6 @@ client.on('messageCreate', async message => {
     }
 });
 
-// Error handling
 client.on('error', error => {
     console.error('Discord client error:', error);
 });
@@ -227,7 +211,6 @@ process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
 });
 
-// Login with error handling
 console.log('Attempting to login...');
 client.login(BOT_TOKEN).catch(error => {
     console.error('Failed to login:', error);

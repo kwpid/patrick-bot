@@ -57,7 +57,6 @@ module.exports = {
                 return embed;
             }
 
-            // Create navigation buttons
             const createButtons = () => {
                 return new ActionRowBuilder()
                     .addComponents(

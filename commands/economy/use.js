@@ -29,7 +29,6 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Create the select menu
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('use_item')
                 .setPlaceholder('select an item to use')
@@ -60,10 +59,9 @@ module.exports = {
                 components: [row]
             });
 
-            // Create collector for the select menu
             const collector = response.createMessageComponentCollector({
                 filter: i => i.user.id === message.author.id,
-                time: 60000 // 1 minute timeout
+                time: 60000
             });
 
             collector.on('collect', async (interaction) => {

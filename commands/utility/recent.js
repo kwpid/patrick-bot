@@ -1,14 +1,11 @@
 const { EmbedBuilder } = require('discord.js');
 
-// Store deleted messages
 const deletedMessages = new Map();
 
-// Listen for deleted messages
 module.exports = {
     name: 'recent',
     description: 'shows recently deleted messages',
     execute(message, client) {
-        // Get deleted messages for this channel
         const channelMessages = deletedMessages.get(message.channel.id) || [];
         
         if (channelMessages.length === 0) {

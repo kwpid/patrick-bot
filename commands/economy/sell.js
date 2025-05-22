@@ -46,7 +46,6 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Create select menu with inventory items
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('sell_item')
                 .setPlaceholder('select an item to sell')
@@ -73,7 +72,6 @@ module.exports = {
                 components: [row]
             });
 
-            // Create collector for select menu interactions
             const collector = response.createMessageComponentCollector({
                 time: 60000
             });
@@ -96,11 +94,9 @@ module.exports = {
                     });
                 }
 
-                // Calculate sell price (50% of original price)
                 const sellPrice = Math.floor(item.price * 0.5);
                 const newBalance = userData.balance + sellPrice;
                 
-                // Remove item and update balance
                 await removeItemFromInventory(message.author.id, item.item_id);
                 await updateUserData(message.author.id, { balance: newBalance });
 
@@ -113,7 +109,6 @@ module.exports = {
 
                 await interaction.reply({ embeds: [sellEmbed] });
 
-                // Update the original message to remove the select menu
                 const updatedEmbed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s sell`)

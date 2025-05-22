@@ -2,7 +2,6 @@ const { Pool } = require('pg');
 const { EmbedBuilder } = require('discord.js');
 const { chests } = require('../data/chests.json');
 
-// Create a new pool using Railway's DATABASE_URL
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -10,19 +9,17 @@ const pool = new Pool({
     }
 });
 
-// Message tracking for XP
 const messageCounts = new Map();
 const commandCounts = new Map();
-const COOLDOWN_TIME = 60000; // 1 minute cooldown for command XP
-const MESSAGE_XP_INTERVAL = 10; // XP every 10 messages
-const COMMAND_XP_INTERVAL = 3; // XP every 3 commands
-const MESSAGE_XP = 5; // XP per message interval
+const COOLDOWN_TIME = 60000;
+const MESSAGE_XP_INTERVAL = 10;
+const COMMAND_XP_INTERVAL = 3;
+const MESSAGE_XP = 5;
 const COMMAND_XP = {
     min: 10,
     max: 15
 };
 
-// Test database connection
 async function testConnection() {
     try {
         const client = await pool.connect();
@@ -35,13 +32,10 @@ async function testConnection() {
     }
 }
 
-// Safely recreate shop table
 async function recreateShopTable() {
     try {
-        // Drop existing shop table if it exists
         await pool.query('DROP TABLE IF EXISTS shop CASCADE');
         
-        // Create shop table with all necessary columns
         await pool.query(`
             CREATE TABLE shop (
                 item_id TEXT PRIMARY KEY,
@@ -61,7 +55,6 @@ async function recreateShopTable() {
             )
         `);
 
-        // Create index for faster queries
         await pool.query('CREATE INDEX IF NOT EXISTS shop_item_id_idx ON shop(item_id)');
         
         console.log('Shop table recreated successfully');
@@ -72,13 +65,11 @@ async function recreateShopTable() {
     }
 }
 
-// Initialize shop items
 async function initializeShopItems() {
     try {
         const shopItems = require('../data/shopItems.json').items;
         const chests = require('../data/chests.json').chests;
         
-        // Insert all items into shop table
         for (const item of shopItems) {
             await pool.query(
                 `INSERT INTO shop (
@@ -105,7 +96,6 @@ async function initializeShopItems() {
             );
         }
 
-        // Add chests to shop table
         for (const [chestId, chestData] of Object.entries(chests)) {
             await pool.query(
                 `INSERT INTO shop (
@@ -117,12 +107,12 @@ async function initializeShopItems() {
                     chestId,
                     chestData.name,
                     chestData.description,
-                    1000, // Default price for chests
-                    "1371269782808039524", // Default chest emoji
+                    1000,
+                    "1371269782808039524",
                     ["chest", "basic"],
-                    500, // Default value
+                    500,
                     "chest",
-                    false, // Chests are not for sale
+                    false,
                     0
                 ]
             );
@@ -139,14 +129,12 @@ async function initializeShopItems() {
 // Initialize database tables
 async function initializeDatabase() {
     try {
-        // Test connection first
         const isConnected = await testConnection();
         if (!isConnected) {
             console.error('Failed to connect to database. Tables will not be created.');
             return;
         }
 
-        // Create economy table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS economy (
                 user_id TEXT PRIMARY KEY,
@@ -159,7 +147,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create inventory table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS inventory (
                 user_id TEXT,
@@ -170,7 +157,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create friends table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS friends (
                 user_id TEXT,
@@ -184,7 +170,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create guilds table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS guilds (
                 guild_id TEXT PRIMARY KEY,
@@ -198,7 +183,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create guild_members table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS guild_members (
                 guild_id TEXT,
@@ -211,7 +195,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create guild_benefits table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS guild_benefits (
                 guild_id TEXT,
@@ -222,7 +205,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create gift_logs table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS gift_logs (
                 gift_id SERIAL PRIMARY KEY,
@@ -237,10 +219,8 @@ async function initializeDatabase() {
             )
         `);
 
-        // Recreate shop table with new schema
         await recreateShopTable();
 
-        // Create chests table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS chests (
                 chest_id TEXT PRIMARY KEY,
@@ -250,7 +230,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Initialize chests if empty
         const chestCheck = await pool.query('SELECT COUNT(*) FROM chests');
         if (chestCheck.rows[0].count === '0') {
             const chests = require('../data/chests.json').chests;
@@ -263,16 +242,14 @@ async function initializeDatabase() {
                         chestId,
                         chestData.name,
                         chestData.description,
-                        "1371269782808039524" // Default chest emoji
+                        "1371269782808039524"
                     ]
                 );
             }
         }
 
-        // Initialize shop items
         await initializeShopItems();
 
-        // Create jobs table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS jobs (
                 user_id TEXT PRIMARY KEY,
@@ -287,7 +264,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Create job requirements table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS job_requirements (
                 job_id TEXT PRIMARY KEY,
@@ -298,7 +274,6 @@ async function initializeDatabase() {
             )
         `);
 
-        // Initialize job requirements if empty
         const jobCheck = await pool.query('SELECT COUNT(*) FROM job_requirements');
         if (jobCheck.rows[0].count === '0') {
             const jobs = [
@@ -322,17 +297,14 @@ async function initializeDatabase() {
             }
         }
 
-        // Create other indexes
         await pool.query(`
             CREATE INDEX IF NOT EXISTS economy_user_id_idx ON economy(user_id);
             CREATE INDEX IF NOT EXISTS inventory_user_id_idx ON inventory(user_id);
             CREATE INDEX IF NOT EXISTS inventory_item_id_idx ON inventory(item_id);
         `);
 
-        // Create active effects table
         await createActiveEffectsTable();
 
-        // Create daily rewards table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS daily_rewards (
                 user_id TEXT PRIMARY KEY,

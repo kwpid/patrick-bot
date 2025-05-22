@@ -17,7 +17,6 @@ module.exports = {
     ],
     async execute(message, client) {
         try {
-            // Get user's inventory and filter for chests
             const inventory = await getUserInventory(message.author.id);
             const userChests = inventory.filter(item => item.type === 'chest');
 
@@ -32,7 +31,6 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Create embed showing available chests
             const embed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${message.author.username}'s chests`)
@@ -45,7 +43,6 @@ module.exports = {
                 .setFooter({ text: 'patrick' })
                 .setTimestamp();
 
-            // Create buttons for each chest type
             const rows = [];
             for (let i = 0; i < userChests.length; i += 5) {
                 const chestRow = new ActionRowBuilder()
@@ -65,7 +62,6 @@ module.exports = {
                 components: rows
             });
 
-            // Create collector for button interactions
             const collector = response.createMessageComponentCollector({
                 time: 60000
             });
@@ -87,16 +83,13 @@ module.exports = {
                         ephemeral: true
                     });
                 }
-
-                // Remove the chest from inventory
+            
                 await removeItemFromInventory(message.author.id, chestId);
 
-                // Get user data for updating balance
                 const userData = await getUserData(message.author.id);
                 const rewards = [];
                 const chestData = chests[chestId];
 
-                // Process each reward type
                 for (const reward of chestData.rewards) {
                     if (reward.type === 'coins') {
                         const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
@@ -111,11 +104,9 @@ module.exports = {
                         }
                     }
                 }
-
-                // Update user's balance
+            
                 await updateUserData(message.author.id, userData);
 
-                // Create embed for rewards
                 const rewardEmbed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s chest`)
@@ -129,7 +120,6 @@ module.exports = {
 
                 await interaction.reply({ embeds: [rewardEmbed] });
 
-                // Update the original message to remove the buttons
                 const updatedEmbed = new EmbedBuilder()
                     .setColor('#292929')
                     .setTitle(`${message.author.username}'s chests`)

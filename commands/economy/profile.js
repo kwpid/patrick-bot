@@ -9,14 +9,12 @@ module.exports = {
     aliases: ['p', 'stats'],
     async execute(message, client) {
         try {
-            // Get target user
             const target = message.mentions.users.first() || message.author;
             const userData = await getUserData(target.id);
             if (!userData) {
                 return message.reply("*this user doesn't have an account yet!*");
             }
 
-            // Create profile select menu
             const profileMenu = new StringSelectMenuBuilder()
                 .setCustomId('profile_menu')
                 .setPlaceholder('Select a view')
@@ -37,7 +35,6 @@ module.exports = {
 
             const row = new ActionRowBuilder().addComponents(profileMenu);
 
-            // Show main profile by default
             const mainEmbed = new EmbedBuilder()
                 .setColor('#292929')
                 .setTitle(`${emojis.profile} ${target.username}'s profile`)
@@ -57,7 +54,7 @@ module.exports = {
             });
 
             const collector = response.createMessageComponentCollector({
-                time: 300000 // 5 minutes
+                time: 300000
             });
 
             collector.on('collect', async (interaction) => {

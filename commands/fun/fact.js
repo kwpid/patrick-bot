@@ -18,7 +18,7 @@ module.exports = {
     execute(message, client) {
         const randomFact = facts[Math.floor(Math.random() * facts.length)];
         const embed = new EmbedBuilder()
-            .setColor('#292929') // light pink, patrick vibes
+            .setColor('#292929')
             .setTitle("patrick's thought")
             .setDescription(randomFact)
             .setFooter({ text: 'patrick star' })

@@ -8,20 +8,17 @@ module.exports = {
     description: 'work for some patrickcoins',
     async execute(message, client) {
         try {
-            // Reset daily shifts if needed
             await resetDailyShifts();
 
             const userData = await getUserData(message.author.id);
             const userJob = await getUserJob(message.author.id);
 
-            // Check if user was fired
             if (userJob && userJob.daily_shifts === 0 && userJob.last_shift_reset) {
                 const lastReset = new Date(userJob.last_shift_reset);
                 const now = new Date();
                 const timeDiff = now - lastReset;
                 const hoursDiff = timeDiff / (1000 * 60 * 60);
 
-                // If it's been less than 24 hours since they were fired
                 if (hoursDiff < 24) {
                     const embed = new EmbedBuilder()
                         .setColor('#292929')
@@ -45,17 +42,14 @@ module.exports = {
                 return message.reply({ embeds: [embed] });
             }
 
-            // Check if user has worked recently
             if (userJob.last_worked) {
                 const lastWorked = new Date(userJob.last_worked);
                 const now = new Date();
                 const timeDiff = now - lastWorked;
                 const minutesDiff = timeDiff / (1000 * 60);
 
-                // Check if 24 hours have passed since last shift
                 const hoursDiff = timeDiff / (1000 * 60 * 60);
                 if (hoursDiff >= 24) {
-                    // Reset shifts if 24 hours have passed
                     await pool.query(
                         'UPDATE jobs SET daily_shifts = 0 WHERE user_id = $1 AND job_id = $2',
                         [message.author.id, userJob.job_id]
@@ -67,40 +61,33 @@ module.exports = {
                 }
             }
 
-            // Get job requirements
             const jobReq = await getJobRequirements(userJob.job_id);
             if (!jobReq) {
                 return message.reply("*something went wrong, try again later!*");
             }
 
-            // Get money boost if any
             const moneyBoost = await getMoneyBoostMultiplier(message.author.id);
             const baseSalary = jobReq.salary;
             const finalSalary = Math.floor(baseSalary * moneyBoost);
 
-            // Get active boosts for display
             const activeBoosts = await getActiveBoostInfo(message.author.id);
 
-            // Check for active beer effect
             const activeEffects = await getActiveEffects(message.author.id);
             const beerEffect = activeEffects.find(effect => effect.item_id === 'beer');
             let gotFired = false;
             let moneyLost = 0;
 
             if (beerEffect) {
-                // 25% chance of getting fired
                 if (Math.random() < 0.25) {
                     gotFired = true;
-                    moneyLost = Math.floor(userData.balance * 0.1); // Lose 10% of balance
+                    moneyLost = Math.floor(userData.balance * 0.1);
                     await setUserJob(message.author.id, null);
                     await updateUserData(message.author.id, { balance: userData.balance - moneyLost });
                 }
             }
 
-            // Run a random game
             const gameResult = await runRandomGame(message);
 
-            // Update last worked time and increment shifts
             const worked = await updateLastWorked(message.author.id);
             const shifted = await incrementDailyShifts(message.author.id);
 
@@ -109,15 +96,12 @@ module.exports = {
             }
 
             if (gameResult.success) {
-                // Calculate salary with beer boost if applicable
                 let salary = finalSalary;
-                salary = Math.floor(salary * 1.05); // +5% more money for every work shift
+                salary = Math.floor(salary * 1.05);
 
-                // Update user balance with salary
                 userData.balance += salary;
                 await updateUserData(message.author.id, userData);
 
-                // Get updated shift count
                 const updatedShiftResult = await pool.query(`
                     SELECT j.daily_shifts, jr.min_shifts
                     FROM jobs j
@@ -139,13 +123,12 @@ module.exports = {
 
                 description += `\n*shifts today: ${newDailyShifts} (minimum required: ${newMinShifts})*\n`;
                 if (remainingShifts > 0) {
-                    description += `*remaining minimum shifts: ${remainingShifts}*\n`;
+                    description += `remaining minimum shifts: ${remainingShifts}\n`;
                 }
                 if (!gotFired) {
-                    description += `⚠️ *remember: you need to complete ${newMinShifts} shifts per day to keep your job!*`;
+                    description += `⚠️ remember: you need to complete ${newMinShifts} shifts per day to keep your job!`;
                 }
 
-                // Add active boosts if any
                 if (activeBoosts.length > 0) {
                     description += formatBoostInfo(activeBoosts);
                 }

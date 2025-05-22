@@ -2,7 +2,6 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const fs = require('fs');
 const path = require('path');
 
-// Define category display names and descriptions
 const categories = {
     economy: {
         name: 'economy',
@@ -22,7 +21,6 @@ const categories = {
     }
 };
 
-// Define argument types and their descriptions
 const argumentTypes = {
     user: 'mention a user',
     text: 'text input',
@@ -37,7 +35,6 @@ module.exports = {
     aliases: ['h'],
     async execute(message, client) {
         try {
-            // Get all command files
             const commands = [];
             const commandFolders = fs.readdirSync(path.join(__dirname, '..'));
 
@@ -61,13 +58,11 @@ module.exports = {
                 }
             }
 
-            // Group commands by category
             const categorizedCommands = {};
             for (const category in categories) {
                 categorizedCommands[category] = commands.filter(cmd => cmd.category === category);
             }
 
-            // Create pages for each category
             const pages = [];
             for (const category in categories) {
                 const categoryCommands = categorizedCommands[category];
@@ -81,12 +76,10 @@ module.exports = {
                         categoryCommands.map(cmd => {
                             let fieldValue = cmd.description;
                             
-                            // Add usage if available
                             if (cmd.usage) {
                                 fieldValue += `\n├ Usage: \`${cmd.usage}\``;
                             }
 
-                            // Add arguments if available
                             if (cmd.args && cmd.args.length > 0) {
                                 fieldValue += '\n├ Arguments:';
                                 cmd.args.forEach(arg => {
@@ -94,7 +87,6 @@ module.exports = {
                                 });
                             }
 
-                            // Add aliases if available
                             if (cmd.aliases && cmd.aliases.length > 0) {
                                 fieldValue += `\n└ Aliases: \`${cmd.aliases.join(', ')}\``;
                             }
@@ -114,7 +106,6 @@ module.exports = {
 
             let currentPage = 0;
 
-            // Create navigation buttons
             const createButtons = () => {
                 return new ActionRowBuilder()
                     .addComponents(
@@ -141,13 +132,10 @@ module.exports = {
                     );
             };
 
-            // Send initial message
             const response = await message.reply({
                 embeds: [pages[currentPage]],
                 components: [createButtons()]
             });
-
-            // Create collector for button interactions
             const collector = response.createMessageComponentCollector({
                 time: 60000
             });
