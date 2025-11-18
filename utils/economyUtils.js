@@ -251,6 +251,16 @@ async function initializeDatabase() {
         await initializeShopItems();
 
         await pool.query(`
+            CREATE TABLE IF NOT EXISTS job_requirements (
+                job_id TEXT PRIMARY KEY,
+                job_name TEXT NOT NULL,
+                required_level INTEGER NOT NULL,
+                salary INTEGER NOT NULL,
+                min_shifts INTEGER NOT NULL DEFAULT 3
+            )
+        `);
+
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS jobs (
                 user_id TEXT PRIMARY KEY,
                 job_id TEXT NOT NULL,
@@ -261,16 +271,6 @@ async function initializeDatabase() {
                 last_shift_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES economy(user_id) ON DELETE CASCADE,
                 FOREIGN KEY (job_id) REFERENCES job_requirements(job_id) ON DELETE CASCADE
-            )
-        `);
-
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS job_requirements (
-                job_id TEXT PRIMARY KEY,
-                job_name TEXT NOT NULL,
-                required_level INTEGER NOT NULL,
-                salary INTEGER NOT NULL,
-                min_shifts INTEGER NOT NULL DEFAULT 3
             )
         `);
 
